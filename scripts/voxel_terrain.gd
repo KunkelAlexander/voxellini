@@ -159,8 +159,8 @@ extends Node3D
 @onready var static_body := $StaticBody3D
 @onready var collision_shape := $StaticBody3D/CollisionShape3D
 
-const SIZE_X := 16
-const SIZE_Y := 16
+const SIZE_X := 32
+const SIZE_Y := 32
 const SIZE_Z := 16
 const ISO_LEVEL := 0.0
 const AIR := 1  # or any positive value = outside
@@ -200,17 +200,27 @@ func is_within_bounding_box(p: Vector3i) -> bool:
 	return (p.x >= 0 && p.x < SIZE_X) && (p.y >= 0 && p.y < SIZE_Y) && (p.z >= 0 && p.z < SIZE_Z)
 
 
-func add_density(center: Vector3i, delta: float, brush_radius: float):
-	var r := brush_radius
-	var r2 := r * r
+func add_density_world(world_pos: Vector3, strength: float, radius: float):
+	var center := Vector3i(
+		floor(world_pos.x),
+		floor(world_pos.y),
+		floor(world_pos.z)
+	)
+
+	var r := int(ceil(radius))
+	var r_f := float(radius)
 
 	for x in range(center.x - r, center.x + r + 1):
 		for y in range(center.y - r, center.y + r + 1):
 			for z in range(center.z - r, center.z + r + 1):
 				var p := Vector3i(x, y, z)
+				var d := Vector3(p).distance_to(world_pos)
 
-				if p.distance_squared_to(center) > r2:
+				if d > r_f:
 					continue
+
+				var falloff := 1.0 - (d / r_f)
+				var delta := strength * falloff
 
 				var old = density_field.get(p, AIR)
 				var new_val = old + delta
@@ -219,10 +229,10 @@ func add_density(center: Vector3i, delta: float, brush_radius: float):
 					density_field.erase(p)
 				else:
 					density_field[p] = new_val
-					
-				print("Went from ", old, " to ", new_val, " at ", p)
 
 	generate_mesh()
+	
+
 # Sample cube corners
 # The numbers 0-7 can be written as a 3 -bit number like 000, 001, 010 and so on
 # Each bit tells you whether that corner is offset by +1 along an axis

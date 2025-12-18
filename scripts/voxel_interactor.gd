@@ -8,36 +8,31 @@ const DEBUG := false
 var selection_marker: MeshInstance3D
 var camera: Camera3D
 var terrain
-var current_selection: Vector3i
+
 var brush_radius := 2.0
-const MIN_BRUSH_RADIUS := 0.5
+const MIN_BRUSH_RADIUS := 1.0
 const MAX_BRUSH_RADIUS := 4.0
 const BRUSH_RADIUS_STEP := 0.1
+const BRUSH_STRENGTH := 10
+var last_hit_position: Vector3
+var last_hit_normal: Vector3
+
 
 func _ready():
 	camera = get_node(camera_path)
 	terrain = get_node(terrain_path)
 
-	if DEBUG:
-		print("[VoxelInteractor] Ready")
-		print("  Camera:", camera)
-		print("  Terrain:", terrain)
-
 	selection_marker = MeshInstance3D.new()
 	selection_marker.mesh = SphereMesh.new()
-	selection_marker.scale = Vector3.ONE * 1.6
 
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.2, 0.4, 1.0, 0.3)
+	mat.albedo_color = Color(0.2, 0.4, 1.0, 0.25)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 
 	selection_marker.material_override = mat
 	selection_marker.visible = false
 	add_child(selection_marker)
-
-	if DEBUG:
-		print("[VoxelInteractor] Selection marker created")
 
 
 func get_camera_ray(max_dist := 100.0) -> Dictionary:
@@ -47,100 +42,50 @@ func get_camera_ray(max_dist := 100.0) -> Dictionary:
 	)
 	var to = origin + dir * max_dist
 
-	if DEBUG:
-		print("[Raycast]")
-		print("  Origin:", origin)
-		print("  Direction:", dir)
-		print("  To:", to)
-
 	var query = PhysicsRayQueryParameters3D.create(origin, to)
 	query.collide_with_bodies = true
 	query.collide_with_areas = false
+	#query.exclude = [selection_marker.get_instance_rid()]
 
-	var hit = get_world_3d().direct_space_state.intersect_ray(query)
-
-	if DEBUG:
-		if hit.is_empty():
-			print("  → No hit")
-		else:
-			print("  → Hit at:", hit.position)
-			print("    Collider:", hit.collider)
-
-	return hit
-
-
-func world_to_grid(p: Vector3) -> Vector3i:
-	var g = Vector3i(floor(p.x), floor(p.y), floor(p.z))
-	if DEBUG:
-		print("  world_to_grid:", p, "→", g)
-	return g
-
-
-func nearest_grid_point(hit_pos: Vector3) -> Vector3i:
-	if DEBUG:
-		print("[Grid Resolve]")
-		print("  Hit position:", hit_pos)
-
-	var base = world_to_grid(hit_pos)
-	var local = hit_pos - Vector3(base)
-
-	if DEBUG:
-		print("  Base cell:", base)
-		print("  Local pos:", local)
-
-	var p = Vector3i(
-		base.x + int(local.x > 0.5),
-		base.y + int(local.y > 0.5),
-		base.z + int(local.z > 0.5)
-	)
-
-	if DEBUG:
-		print("  Nearest grid point:", p)
-
-	return p
-
-
-func is_valid_selection(p: Vector3i) -> bool:
-	if DEBUG:
-		print("  Validate selection:", p)
-	return terrain.is_within_bounding_box(p)
+	return get_world_3d().direct_space_state.intersect_ray(query)
 
 
 func _process(_dt):
 	var hit = get_camera_ray()
 
 	if hit.is_empty():
-		if selection_marker.visible:
-			if DEBUG:
-				print("[Selection] Cleared (no hit)")
 		selection_marker.visible = false
 		return
 
-	var p = nearest_grid_point(hit.position)
+	# Store surface info
+	last_hit_position = hit.position
+	last_hit_normal = hit.normal
 
-	if not is_valid_selection(p):
-		if DEBUG:
-			print("[Selection] Invalid:", p)
-		selection_marker.visible = false
-		return
-
-	if DEBUG:
-		print("[Selection] Valid:", p)
-
+	# Position brush slightly above surface
 	selection_marker.visible = true
-	selection_marker.global_position = Vector3(p)
-	current_selection = p
+	selection_marker.global_position = (
+		last_hit_position + last_hit_normal * 0.05
+	)
+	selection_marker.scale = Vector3.ONE * brush_radius * 1.0
 
-
+	# Sculpting
 	if Input.is_action_pressed("add_density"):
 		if DEBUG:
-			print("[Interactor] Add density at", p)
-		terrain.add_density(p, -0.1, brush_radius)
+			print("[Interactor] Add density at", last_hit_position)
+		terrain.add_density_world(
+			last_hit_position,
+			-BRUSH_STRENGTH,
+			brush_radius
+		)
 
 	if Input.is_action_pressed("remove_density"):
 		if DEBUG:
-			print("[Interactor] Remove density at", p)
-		terrain.add_density(p, +0.1, brush_radius)
+			print("[Interactor] Remove density at", last_hit_position)
+		terrain.add_density_world(
+			last_hit_position,
+			+BRUSH_STRENGTH,
+			brush_radius
+		)
 
 
 func _unhandled_input(event):
