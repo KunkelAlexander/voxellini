@@ -1,9 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://dt1wmc4rob5kn"]
+[gd_scene load_steps=9 format=3 uid="uid://dt1wmc4rob5kn"]
 
 [ext_resource type="Script" uid="uid://dwtmro20xp3vn" path="res://player.gd" id="1_f3sb7"]
 [ext_resource type="Script" uid="uid://cy4iyllw61jrh" path="res://voxel_terrain.gd" id="2_fj7yv"]
+[ext_resource type="Script" uid="uid://dsucplivxani2" path="res://grid_debug.gd" id="3_tlwt5"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fj7yv"]
+albedo_color = Color(1, 0.67451, 1, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_tlwt5"]
 material = SubResource("StandardMaterial3D_fj7yv")
@@ -41,3 +43,6 @@ script = ExtResource("2_fj7yv")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="VoxelTerrain"]
 skeleton = NodePath("../..")
+
+[node name="GridDebug" type="Node3D" parent="."]
+script = ExtResource("3_tlwt5")
