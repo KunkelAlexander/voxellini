@@ -1,6 +1,6 @@
 extends Node3D
 
-const DEBUG := true
+const DEBUG := false
 
 @export var camera_path: NodePath
 @export var terrain_path: NodePath
@@ -35,12 +35,12 @@ func _ready():
 	selection_marker.mesh = SphereMesh.new()
 
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.2, 0.4, 1.0, 0.25)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 
 	selection_marker.material_override = mat
 	selection_marker.visible = false
+	update_brush_visual()
 	add_child(selection_marker)
 
 
@@ -68,7 +68,7 @@ func _process(_dt):
 
 	# Store surface info
 	last_hit_position = hit.position
-	last_hit_normal = hit.normal
+	last_hit_normal   = hit.normal
 
 	# Position brush slightly above surface
 	selection_marker.visible = true
@@ -91,7 +91,8 @@ func _process_sculpting():
 		terrain.add_density_world(
 			last_hit_position,
 			-BRUSH_STRENGTH,
-			brush_radius
+			brush_radius,
+			current_material_id
 		)
 
 	if Input.is_action_pressed("remove_density"):
@@ -108,10 +109,11 @@ func _process_painting():
 		if DEBUG:
 			print("[Interactor] Paint material", current_material_id,
 				  "at", last_hit_position)
-		terrain.paint_material_world(
+		terrain.add_density_world(
 			last_hit_position,
-			current_material_id,
-			brush_radius
+			0,
+			brush_radius, 
+			current_material_id
 		)
 
 func _unhandled_input(event):
@@ -129,19 +131,18 @@ func _unhandled_input(event):
 			print("[Tool] Paint")
 			
 	if event.is_action_pressed("next_material"):
-		if current_tool == Tool.PAINT:
-			current_material_id += 1
+		current_material_id += 1
 
-			var count := material_palette.size()
-			if count > 0:
-				current_material_id = current_material_id % count
-			else:
-				current_material_id = 0
+		var count := material_palette.size()
+		if count > 0:
+			current_material_id = current_material_id % count
+		else:
+			current_material_id = 0
 
-			update_brush_visual()
+		update_brush_visual()
 
-			if DEBUG:
-				print("[Material] Current material ID:", current_material_id)
+		if DEBUG:
+			print("[Material] Current material ID:", current_material_id)
 			
 	if event.is_action_pressed("brush_radius_up"):
 		brush_radius = clamp(
@@ -177,9 +178,5 @@ const INFERNO_COLORS : Array[Color] =  [
 
 func update_brush_visual():
 	var mat := selection_marker.material_override as StandardMaterial3D
-	match current_tool:
-		Tool.SCULPT:
-			mat.albedo_color = Color(0.2, 0.4, 1.0, 0.25) # blue
-		Tool.PAINT:
-			var c := material_palette[current_material_id]
-			mat.albedo_color = Color(c.r, c.g, c.b, 0.25)
+	var c := material_palette[current_material_id]
+	mat.albedo_color = Color(c.r, c.g, c.b, 0.25)

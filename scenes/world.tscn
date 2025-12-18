@@ -16,7 +16,6 @@ background_mode = 2
 sky = SubResource("Sky_fj7yv")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fj7yv"]
-albedo_color = Color(0.222767, 0.034192, 0, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_tlwt5"]
 material = SubResource("StandardMaterial3D_fj7yv")
@@ -34,7 +33,9 @@ script = ExtResource("1_k0juu")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.027231, 0.870443, 0.491516, -0.826302, -0.257116, 0.501115, 0.562568, -0.419787, 0.712247, -3.86903, 15.1266, -7.30279)
+transform = Transform3D(0.777131, 0.562468, -0.282307, 0.078974, 0.357873, 0.930425, 0.624364, -0.745357, 0.233694, -3.66706, 15.7697, -6.84261)
+light_indirect_energy = 2.833
+light_negative = true
 shadow_enabled = true
 
 [node name="Sky" type="WorldEnvironment" parent="."]
@@ -69,3 +70,5 @@ skeleton = NodePath("../..")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
 shape = SubResource("BoxShape3D_aqk2v")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
