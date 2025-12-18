@@ -156,26 +156,48 @@ extends Node3D
 
 
 @onready var mesh_instance := $MeshInstance3D
-
+@onready var static_body := $StaticBody3D
+@onready var collision_shape := $StaticBody3D/CollisionShape3D
 
 const SIZE_X := 16
 const SIZE_Y := 16
 const SIZE_Z := 16
 const ISO_LEVEL := 0.0
+const AIR := 1e6  # or any positive value = outside
+const SOLID := -1.0
+const DEBUG := false
+const DEBUG_MESH := false
 
+var density_field := {} # Dictionary<Vector3i, float>
 
+	
+func dbg(x, y, z) -> bool:
+	return DEBUG
+	
+func density(x, y, z) -> float:
+	return density_field.get(Vector3i(x, y, z), AIR)
+
+func init_density():
+	var center = Vector3(8, 8, 8)
+	var radius = 6.0
+
+	for x in range(0, 16):
+		for y in range(0, 16):
+			for z in range(0, 16):
+				var p = Vector3(x, y, z)
+				var d = p.distance_to(center) - radius
+				if d < 0.0:
+					density_field[Vector3i(x, y, z)] = d
+
+func has_density(p: Vector3i) -> bool:
+	return density_field.get(p, 0.0) > 0.0
+	
 func is_ground(p: Vector3i) -> bool:
 	return p.y == 0
 	
-# 1. DENSITY FIELD
-func density(x: float, y: float, z: float) -> float:
-	var center = Vector3(8.0, 8.0, 8.0)
-	var radius = 6.0
-	return Vector3(x, y, z).distance_to(center) - radius
-
-func density_sphere(x: float, y: float, z: float) -> float:
-	return z > 0
-
+func is_within_bounding_box(p: Vector3i) -> bool:
+	return (p.x >= 0 && p.x < SIZE_X) && (p.y >= 0 && p.y < SIZE_Y) && (p.z >= 0 && p.z < SIZE_Z)
+	
 # Sample cube corners
 # The numbers 0-7 can be written as a 3 -bit number like 000, 001, 010 and so on
 # Each bit tells you whether that corner is offset by +1 along an axis
@@ -563,13 +585,9 @@ var EDGE_TO_POINTS = [
 ]
 
 func _ready():
+	init_density()
 	generate_mesh()
 	
-const DEBUG := false
-func dbg(x, y, z) -> bool:
-	return DEBUG
-	
-const DEBUG_MESH := false
 
 func generate_mesh():
 	var vertices: PackedVector3Array = []
@@ -583,7 +601,6 @@ func generate_mesh():
 				var before := vertices.size()
 				march_cube(x, y, z, vertices, indices, index)
 				var after := vertices.size()
-				
 				if DEBUG_MESH:
 					print("cube (", x, y, z, ") emitted ", (after - before) / 3, " triangles")
 
@@ -603,6 +620,14 @@ func generate_mesh():
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	mesh_instance.mesh = mesh
+	
+	# Update collision
+	if mesh.get_surface_count() == 0:
+		collision_shape.shape = null
+		return
+
+	collision_shape.shape = mesh.create_trimesh_shape()
+
 
 func march_cube(x, y, z, vertices, indices, index):
 	var cube = []
@@ -611,9 +636,7 @@ func march_cube(x, y, z, vertices, indices, index):
 	for i in range(8):
 		var p = cube_corner(x, y, z, i)
 		var d = density(p.x, p.y, p.z)
-			
 		cube.append(d)
-
 			
 		if dbg(x,y,z):
 			print("Corner ", i,
@@ -621,8 +644,6 @@ func march_cube(x, y, z, vertices, indices, index):
 				" density=", snapped(d, 0.0001),
 				" inside=", d > ISO_LEVEL
 			)
-
-
 	# Check whether densities at corners are above ISO_LEVEL threshold
 	# cube_index is an 8-bit number where each bit indicates whether corner i is inside the surface 
 	var cube_index := 0
@@ -670,7 +691,7 @@ func march_cube(x, y, z, vertices, indices, index):
 					print("edge ", edge,
 						" vertex=", v
 					)
-  	# Iterate over vertices
+	# Iterate over vertices
 	var i := 0
 	var flip := false
 	while TRI_TABLE[cube_index][i] != -1:

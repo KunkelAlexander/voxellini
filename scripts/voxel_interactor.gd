@@ -99,8 +99,7 @@ func nearest_grid_point(hit_pos: Vector3) -> Vector3i:
 func is_valid_selection(p: Vector3i) -> bool:
 	if DEBUG:
 		print("  Validate selection:", p)
-	# return terrain.has_density(p) or terrain.is_ground(p)
-	return true
+	return terrain.is_within_bounding_box(p)
 
 
 func _process(_dt):
