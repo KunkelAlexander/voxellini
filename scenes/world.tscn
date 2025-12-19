@@ -14,8 +14,6 @@ sky_material = SubResource("ProceduralSkyMaterial_71j4m")
 [sub_resource type="Environment" id="Environment_tlwt5"]
 background_mode = 2
 sky = SubResource("Sky_qfnet")
-ssao_enabled = true
-ssil_enabled = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fj7yv"]
 

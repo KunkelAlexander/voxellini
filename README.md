@@ -109,6 +109,7 @@ Compute vertex normals in marching cubes. The below figure shows before (left) a
 * Shared sculpt / paint brush system
 * Real-time brush preview
 * Undo/Redo
+* Save/Load
 * Menu
 
 ## Controls (current)
@@ -124,6 +125,7 @@ Compute vertex normals in marching cubes. The below figure shows before (left) a
 | Cycle material      | `Tab`                     |
 | Move                | WASD + Space + Shift      |
 | Undo/redo           | Control + z/y             |
+| Menu                | Escape                    |
 
 
 ## Planned Work
@@ -132,7 +134,6 @@ Compute vertex normals in marching cubes. The below figure shows before (left) a
 * [ ] Performance optimizations
 * [ ] Tool & material UI
 * [ ] Texture-based materials
-* [ ] Save / load
 * [ ] Additional sculpting tools
 
 ## License
