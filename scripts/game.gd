@@ -4,6 +4,7 @@ enum Mode { GAMEPLAY, MENU }
 var mode := Mode.GAMEPLAY
 
 signal mode_changed(new_mode)
+signal world_loaded(world)
 
 var pause_menu: CanvasLayer
 func _ready():
@@ -30,3 +31,21 @@ func _apply_mouse_mode():
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		Mode.MENU:
 			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+			
+
+func get_world() -> Node:
+	return get_tree().get_first_node_in_group("world")
+	
+func save_world():
+	var world = get_world()
+	if world:
+		SaveManager.save_world_to_file(world, "user://world.json")
+	
+
+func load_world():
+	var world = get_world()
+	if world:
+		SaveManager.load_world_from_file(world, "user://world.json")
+
+		# Let other components know 
+		emit_signal("world_loaded", world)

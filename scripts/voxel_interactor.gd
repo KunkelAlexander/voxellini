@@ -48,6 +48,9 @@ func _ready():
 	selection_marker.visible = false
 	update_brush_visual()
 	add_child(selection_marker)
+	
+	
+	Game.world_loaded.connect(_on_world_loaded)
 
 
 
@@ -226,3 +229,7 @@ func get_camera_ray(max_dist := 100.0) -> Dictionary:
 	query.collide_with_areas = false
 
 	return get_world_3d().direct_space_state.intersect_ray(query)
+
+func _on_world_loaded(world):
+	undo_stack.clear()
+	redo_stack.clear()

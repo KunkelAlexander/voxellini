@@ -16,10 +16,10 @@ func _on_resume_pressed():
 	Game.set_mode(Game.Mode.GAMEPLAY)
 
 func _on_save_pressed():
-	print("Save world (TODO)")
+	Game.save_world()
 
 func _on_load_pressed():
-	print("Load world (TODO)")
+	Game.load_world()
 	
 func _on_quit_pressed():
 	get_tree().quit()

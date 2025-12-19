@@ -1,9 +1,8 @@
-[gd_scene load_steps=13 format=3 uid="uid://dt1wmc4rob5kn"]
+[gd_scene load_steps=12 format=3 uid="uid://dt1wmc4rob5kn"]
 
 [ext_resource type="Script" uid="uid://dwtmro20xp3vn" path="res://scripts/player.gd" id="1_k0juu"]
 [ext_resource type="Script" uid="uid://cy4iyllw61jrh" path="res://scripts/voxel_terrain.gd" id="2_71j4m"]
 [ext_resource type="Script" uid="uid://b6706qvgfv0y6" path="res://scripts/bounding_box.gd" id="3_71j4m"]
-[ext_resource type="Script" uid="uid://dsucplivxani2" path="res://scripts/grid_debug.gd" id="3_qfnet"]
 [ext_resource type="Script" uid="uid://bdi6kro28lghl" path="res://scripts/voxel_interactor.gd" id="4_i7141"]
 [ext_resource type="Script" uid="uid://ctku6nm8mvx4j" path="res://scripts/pause_menu.gd" id="7_4mrxx"]
 
@@ -45,28 +44,24 @@ shadow_enabled = true
 [node name="Sky" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_tlwt5")
 
-[node name="VoxelTerrain" type="Node3D" parent="."]
+[node name="World" type="Node3D" parent="."]
 script = ExtResource("2_71j4m")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="VoxelTerrain"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="World"]
 skeleton = NodePath("../..")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="VoxelTerrain"]
+[node name="StaticBody3D" type="StaticBody3D" parent="World"]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="VoxelTerrain/StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/StaticBody3D"]
 
-[node name="BoundingBox" type="Node3D" parent="VoxelTerrain"]
+[node name="BoundingBox" type="Node3D" parent="World"]
 visible = false
 script = ExtResource("3_71j4m")
-
-[node name="GridDebug" type="Node3D" parent="."]
-visible = false
-script = ExtResource("3_qfnet")
 
 [node name="VoxelInteractor" type="Node3D" parent="."]
 script = ExtResource("4_i7141")
 camera_path = NodePath("../Player/Camera3D")
-terrain_path = NodePath("../VoxelTerrain")
+terrain_path = NodePath("../World")
 
 [node name="Ground" type="StaticBody3D" parent="."]
 

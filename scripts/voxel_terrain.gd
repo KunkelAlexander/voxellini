@@ -200,6 +200,19 @@ const INFERNO_COLORS := [
 func dbg(x, y, z) -> bool:
 	return DEBUG
 
+func get_density_field() -> Dictionary:
+	return density_field
+
+func get_material_field() -> Dictionary:
+	return material_id_field
+
+func set_density_field(d: Dictionary):
+	density_field = d
+
+func set_material_field(m: Dictionary):
+	material_id_field = m
+
+
 # Getters and setters for material and density fields
 # Index the density and material fields using integers only
 func get_density(p: Vector3i) -> float:
@@ -672,6 +685,7 @@ var EDGE_TO_POINTS = [
 ]
 
 func _ready():
+	add_to_group("world")
 	init_density()
 	generate_mesh()
 
@@ -682,6 +696,9 @@ func generate_mesh():
 	var indices:  PackedInt32Array   = []
 	var colors:   PackedColorArray   = []
 
+	if DEBUG_MESH:
+		print("Number of density points: ", density_field.size())
+		print("Number of material points: ", material_id_field.size())
 	var index := 0
 
 	for x in range(SIZE_X - 1):
