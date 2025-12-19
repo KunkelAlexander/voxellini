@@ -19,11 +19,11 @@ sky = SubResource("Sky_qfnet")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_tlwt5"]
 material = SubResource("StandardMaterial3D_fj7yv")
-size = Vector2(16, 16)
+size = Vector2(100, 100)
 center_offset = Vector3(8, 0, 8)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_aqk2v"]
-size = Vector3(50, 2, 50)
+size = Vector3(100, 2, 100)
 
 [node name="World" type="Node3D"]
 

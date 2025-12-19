@@ -174,7 +174,7 @@ const DEBUG            := false
 const DEBUG_MESH       := false
 const BRUSH_RADIUS     := 2
 const DEFAULT_MATERIAL := 0
-
+const NO_MATERIAL      := -1
 # We store materials on grid points and interpolate to vertex colours in the first step
 # Alternatively one could colour the generated verticles which would be more precise
 # This could be a layer on top (i.e. material with a paint on top)
@@ -230,7 +230,7 @@ func get_density_local_or_world(p: Vector3i) -> float:
 	return world.get_density(world_p)
 
 func get_material(p: Vector3i) -> int:
-	return material_id_field.get(p, DEFAULT_MATERIAL)
+	return material_id_field.get(p, NO_MATERIAL)
 
 
 func get_material_local_or_world(p: Vector3i) -> float:
@@ -829,7 +829,10 @@ func material_id_to_color(id: int) -> Color:
 	return material_palette.get(id, INFERNO_COLORS[0])
 
 func sample_material_color(p: Vector3i):
-	return material_id_to_color(get_material_local_or_world(p))
+	var material_id = get_material_local_or_world(p)
+	if material_id == NO_MATERIAL:
+		return null
+	return material_id_to_color(material_id)
 
 # Minimal version: Constant interpolation
 # Assume that vertex of surface lies at midpoint between corners
