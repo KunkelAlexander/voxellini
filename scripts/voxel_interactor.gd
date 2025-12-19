@@ -26,6 +26,12 @@ const BRUSH_STRENGTH := 10
 var last_hit_position: Vector3
 var last_hit_normal: Vector3
 
+# Implement undo/redo using command pattern
+var undo_stack := []
+var redo_stack := []
+
+var active_command: VoxelBrushCommand = null
+
 
 func _ready():
 	camera = get_node(camera_path)
@@ -54,7 +60,6 @@ func get_camera_ray(max_dist := 100.0) -> Dictionary:
 	var query = PhysicsRayQueryParameters3D.create(origin, to)
 	query.collide_with_bodies = true
 	query.collide_with_areas = false
-	#query.exclude = [selection_marker.get_instance_rid()]
 
 	return get_world_3d().direct_space_state.intersect_ray(query)
 
@@ -84,6 +89,9 @@ func _process(_dt):
 			_process_painting()
 			
 func _process_sculpting():
+	if active_command == null:
+		return
+
 	# Sculpting
 	if Input.is_action_pressed("add_density"):
 		if DEBUG:
@@ -92,7 +100,8 @@ func _process_sculpting():
 			last_hit_position,
 			-BRUSH_STRENGTH,
 			brush_radius,
-			current_material_id
+			current_material_id,
+			active_command
 		)
 
 	if Input.is_action_pressed("remove_density"):
@@ -101,7 +110,9 @@ func _process_sculpting():
 		terrain.add_density_world(
 			last_hit_position,
 			+BRUSH_STRENGTH,
-			brush_radius
+			brush_radius,
+			current_material_id,
+			active_command
 		)
 
 func _process_painting():
@@ -117,7 +128,23 @@ func _process_painting():
 		)
 
 func _unhandled_input(event):
-	
+	# Start sculpt stroke
+	if event.is_action_pressed("add_density") or event.is_action_pressed("remove_density"):
+		if active_command == null:
+			active_command = VoxelBrushCommand.new()
+			if DEBUG:
+				print("[Command] Begin brush stroke")
+
+	# End sculpt stroke
+	if event.is_action_released("add_density") or event.is_action_released("remove_density"):
+		if active_command != null:
+			undo_stack.append(active_command)
+			redo_stack.clear()
+			if DEBUG:
+				print("[Command] End brush stroke, voxels:",
+					  active_command.before.size())
+			active_command = null
+			
 	if event.is_action_pressed("tool_sculpt"):
 		current_tool = Tool.SCULPT
 		update_brush_visual()
@@ -161,7 +188,16 @@ func _unhandled_input(event):
 		)
 		if DEBUG:
 			print("[Interactor] Brush radius:", brush_radius)
+			
+	if event.is_action_pressed("undo") and undo_stack.size() > 0:
+		var cmd = undo_stack.pop_back()
+		cmd.undo(terrain)
+		redo_stack.append(cmd)
 
+	elif event.is_action_pressed("redo") and redo_stack.size() > 0:
+		var cmd = redo_stack.pop_back()
+		cmd.execute(terrain)
+		undo_stack.append(cmd)
 
 # Let's make this a texture lookup later
 var material_palette : Array[Color] = INFERNO_COLORS

@@ -17,7 +17,7 @@ extends Node3D
 # ---------------------------------------------------------------------------
 # The density function defines a continuous scalar field:
 #
-#     density(x, y, z) -> float
+#     get_density(x, y, z) -> float
 #
 # By convention:
 #   density < 0 : inside solid
@@ -159,22 +159,22 @@ extends Node3D
 @onready var static_body := $StaticBody3D
 @onready var collision_shape := $StaticBody3D/CollisionShape3D
 
-const SIZE_X := 16
-const SIZE_Y := 16
-const SIZE_Z := 16
-const ISO_LEVEL := 0.0
-const AIR := 1  # or any positive value = outside
-const SOLID := -1.0
-const DEBUG := false
-const DEBUG_MESH := false
-const BRUSH_RADIUS := 2
-
-var density_field := {} # Dictionary<Vector3i, float>
+const SIZE_X           := 16
+const SIZE_Y           := 16
+const SIZE_Z           := 16
+const ISO_LEVEL        := +0.0
+const AIR              := +1.0  # or any positive value = outside
+const SOLID            := -1.0
+const DEBUG            := false
+const DEBUG_MESH       := false
+const BRUSH_RADIUS     := 2
+const DEFAULT_MATERIAL := 0
 
 # We store materials on grid points and interpolate to vertex colours in the first step
 # Alternatively one could colour the generated verticles which would be more precise 
 # This could be a layer on top (i.e. material with a paint on top) 
-var material_id_field := {} # Dictionary<Vector3i, int>
+var density_field      := {} # Dictionary<Vector3i, float>
+var material_id_field  := {} # Dictionary<Vector3i, int>
 
 # Let's make this a texture lookup later
 var material_palette := {
@@ -199,10 +199,25 @@ const INFERNO_COLORS := [
 	
 func dbg(x, y, z) -> bool:
 	return DEBUG
-	
-func density(x, y, z) -> float:
-	return density_field.get(Vector3i(x, y, z), AIR)
 
+# Getters and setters for material and density fields
+# Index the density and material fields using integers only
+func get_density(p: Vector3i) -> float:
+	return density_field.get(p, AIR)
+	
+func get_material(p: Vector3i) -> int:
+	return material_id_field.get(p, DEFAULT_MATERIAL)
+
+func set_density(p: Vector3i, value):
+	if value > 0.0:
+		density_field.erase(p)
+	else:
+		density_field[p] = value
+	
+func set_material(p: Vector3i, value):
+	if density_field.has(p): 
+		material_id_field[p] = value
+	
 	
 func init_density():
 	var center = Vector3(8, 8, 8)
@@ -211,13 +226,13 @@ func init_density():
 	for x in range(0, 16):
 		for y in range(0, 16):
 			for z in range(0, 16):
-				var p = Vector3(x, y, z)
+				var p = Vector3i(x, y, z)
 				var d = p.distance_to(center) - radius
 				if d < 0.0:
-					density_field[Vector3i(x, y, z)] = d
+					set_density(p, d)
 
 func has_density(p: Vector3i) -> bool:
-	return density_field.get(p, 0.0) > 0.0
+	return density_field.has(p)
 	
 func is_ground(p: Vector3i) -> bool:
 	return p.y == 0
@@ -226,14 +241,13 @@ func is_within_bounding_box(p: Vector3i) -> bool:
 	return (p.x > 0 && p.x < SIZE_X - 1) && (p.y >= 0 && p.y < SIZE_Y - 1) && (p.z > 0 && p.z < SIZE_Z -1)
 
 
-func add_density_world(world_pos: Vector3, strength: float, radius: float, material_id: int = 0):
+func add_density_world(world_pos: Vector3, strength: float, radius: float, material_id: int = DEFAULT_MATERIAL, command: VoxelBrushCommand = null):
 	var center := Vector3i(
 		floor(world_pos.x),
 		floor(world_pos.y),
 		floor(world_pos.z)
 	)
-
-	var r := int(ceil(radius))
+	var r   := int(ceil(radius))
 	var r_f := float(radius)
 
 	for x in range(center.x - r, center.x + r + 1):
@@ -242,23 +256,29 @@ func add_density_world(world_pos: Vector3, strength: float, radius: float, mater
 				var p := Vector3i(x, y, z)
 				var d := Vector3(p).distance_to(world_pos)
 
+				# Check whether point is within brush radius and bounding box
 				if d > r_f or not is_within_bounding_box(p):
 					continue
 
-				var falloff := 1.0 - (d / r_f)
-				var delta := strength * falloff
+				
+				# Calculate new density and material fields and record change
+				var old_density  := get_density(p)
+				var old_material := get_material(p)
 
-				var old = density_field.get(p, AIR)
-				var new_val = old + delta
+				if command:
+					command.record_before(p, old_density, old_material)
 
-				if new_val > 0.0:
-					density_field.erase(p)
-				else:
-					density_field[p] = new_val
-					
-				# Dye material at point p
-				if delta <= 0: 
-					material_id_field[p] = material_id
+				var falloff      := 1.0 - (d / r_f)
+				var delta        := strength * falloff
+				var new_density  := old_density + delta
+				var new_material := material_id 
+				
+				if command:
+					command.record_after(p, new_density, new_material)
+
+				# Update density and material fields
+				set_density(p, new_density)
+				set_material(p, new_material)
 					
 	generate_mesh()
 
@@ -328,12 +348,12 @@ const BOURKE_CORNER_MAP = [
 	6  # 7 -> 6
 ]
 
-func cube_corner(x, y, z, i):
+func cube_corner_offset(i: int) -> Vector3i:
 	var j = BOURKE_CORNER_MAP[i]
-	return Vector3(
-		x + float((j & 1) != 0),
-		y + float((j & 2) != 0),
-		z + float((j & 4) != 0)
+	return Vector3i(
+		(j & 1) != 0,
+		(j & 2) != 0,
+		(j & 4) != 0
 	)
 	
 # How are triangles formed?
@@ -656,8 +676,8 @@ func _ready():
 
 func generate_mesh():
 	var vertices: PackedVector3Array = []
-	var indices: PackedInt32Array = []
-	var colors: PackedColorArray = []
+	var indices:  PackedInt32Array   = []
+	var colors:   PackedColorArray   = []
 
 	var index := 0
 
@@ -708,18 +728,18 @@ func march_cube(x, y, z, vertices, colors):
 	
 
 	for i in range(8):
-		var p = cube_corner(x, y, z, i)
-		var d = density(p.x, p.y, p.z)
+		var p_i = Vector3i(x, y, z) + cube_corner_offset(i)
+		var d   = get_density(p_i)
 		cube.append(d)
 		
 	# Check whether densities at corners are above ISO_LEVEL threshold
 	# cube_index is an 8-bit number where each bit indicates whether corner i is inside the surface 
+	# Set i-th bit in cube_index to indicate that corner is present
 	var cube_index := 0
 	for i in range(8):
 		if cube[i] > ISO_LEVEL:
-			# Set i-th bit in cube_index to indicate that corner is present
 			cube_index |= (1 << i) 
-		
+	
  	# Check which edges are crossed by cube surface
 	# Edges are crossed because they connect two corners
 	# One corner has density lower than the isosurface
@@ -742,7 +762,7 @@ func march_cube(x, y, z, vertices, colors):
 	# How to connect neighboring cubes consistently
 	for edge in range(12):
 		if edges & (1 << edge):
-			var res          = interpolate_edge_with_color(Vector3(x, y, z), edge)
+			var res          = interpolate_edge_with_color(Vector3i(x, y, z), edge)
 			vert_list[edge]  = res.pos
 			color_list[edge] = res.color
 
@@ -801,43 +821,46 @@ func material_id_to_color(id: int) -> Color:
 func sample_material_color(p: Vector3i):
 	if not density_field.has(p):
 		return null # signal "no material"
-	return material_id_to_color(material_id_field.get(p, 0))
+	return material_id_to_color(get_material(p))
 		
 # Minimal version: Constant interpolation
 # Assume that vertex of surface lies at midpoint between corners
-func interpolate_edge_constant(base: Vector3, edge: int):
-	var p1 = cube_corner(base.x, base.y, base.z, EDGE_TO_POINTS[edge][0])
-	var p2 = cube_corner(base.x, base.y, base.z, EDGE_TO_POINTS[edge][1])
+func interpolate_edge_constant(base: Vector3i, edge: int):
+	var p1 = Vector3(cube_corner_offset(EDGE_TO_POINTS[edge][0]))
+	var p2 = Vector3(cube_corner_offset(EDGE_TO_POINTS[edge][1]))
 
-	return (p1 + p2) * 0.5
+	return base + (p1 + p2) * 0.5
 	
 # Linear interpolation
 # Assume that vertex of surface lies at density-weighted midpoint of corners
-func interpolate_edge(base: Vector3, edge: int):
+func interpolate_edge(base: Vector3i, edge: int):
 	var c0 = EDGE_TO_POINTS[edge][0]
 	var c1 = EDGE_TO_POINTS[edge][1]
 
-	var p0 = base + cube_corner(0,0,0,c0)
-	var p1 = base + cube_corner(0,0,0,c1)
-
-	var d0 = density(p0.x, p0.y, p0.z)
-	var d1 = density(p1.x, p1.y, p1.z)
+	var p0_i = base + cube_corner_offset(c0)
+	var p1_i = base + cube_corner_offset(c1)
+	
+	var p0  = Vector3(p0_i)
+	var p1  = Vector3(p1_i)
+	
+	var d0 = get_density(p0_i)
+	var d1 = get_density(p1_i)
 
 	var t = (d0 - ISO_LEVEL) / (d0 - d1)
 	return p0 + t * (p1 - p0)
 
-func interpolate_edge_with_color(base: Vector3, edge: int):
+func interpolate_edge_with_color(base: Vector3i, edge: int):
 	var c0 = EDGE_TO_POINTS[edge][0]
 	var c1 = EDGE_TO_POINTS[edge][1]
 
-	var p0_i = Vector3i(base) + Vector3i(cube_corner(0,0,0,c0))
-	var p1_i = Vector3i(base) + Vector3i(cube_corner(0,0,0,c1))
-
-	var p0 = Vector3(p0_i)
-	var p1 = Vector3(p1_i)
-
-	var d0 = density(p0.x, p0.y, p0.z)
-	var d1 = density(p1.x, p1.y, p1.z)
+	var p0_i = base + cube_corner_offset(c0)
+	var p1_i = base + cube_corner_offset(c1)
+	
+	var p0  = Vector3(p0_i)
+	var p1  = Vector3(p1_i)
+	
+	var d0 = get_density(p0_i)
+	var d1 = get_density(p1_i)
 	
 	var t = (d0 - ISO_LEVEL) / (d0 - d1)
 
