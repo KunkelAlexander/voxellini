@@ -77,17 +77,17 @@ skeleton = NodePath("../..")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
 shape = SubResource("BoxShape3D_aqk2v")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="Menu" type="CanvasLayer" parent="."]
 script = ExtResource("7_4mrxx")
 
-[node name="Panel2" type="Panel" parent="CanvasLayer"]
+[node name="Panel" type="Panel" parent="Menu"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Panel2"]
+[node name="Buttons" type="VBoxContainer" parent="Menu/Panel"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -101,27 +101,27 @@ offset_bottom = 68.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Button" type="Button" parent="CanvasLayer/Panel2/VBoxContainer"]
+[node name="Resume" type="Button" parent="Menu/Panel/Buttons"]
 custom_minimum_size = Vector2(320, 56)
 layout_mode = 2
 text = "Resume"
 
-[node name="Button2" type="Button" parent="CanvasLayer/Panel2/VBoxContainer"]
+[node name="Save" type="Button" parent="Menu/Panel/Buttons"]
 custom_minimum_size = Vector2(320, 56)
 layout_mode = 2
 text = "Save World"
 
-[node name="Button3" type="Button" parent="CanvasLayer/Panel2/VBoxContainer"]
+[node name="Load" type="Button" parent="Menu/Panel/Buttons"]
 custom_minimum_size = Vector2(320, 56)
 layout_mode = 2
 text = "Load World"
 
-[node name="Button4" type="Button" parent="CanvasLayer/Panel2/VBoxContainer"]
+[node name="Exit" type="Button" parent="Menu/Panel/Buttons"]
 custom_minimum_size = Vector2(320, 56)
 layout_mode = 2
 text = "Quit"
 
-[connection signal="pressed" from="CanvasLayer/Panel2/VBoxContainer/Button" to="CanvasLayer" method="_on_resume_pressed"]
-[connection signal="pressed" from="CanvasLayer/Panel2/VBoxContainer/Button2" to="CanvasLayer" method="_on_save_pressed"]
-[connection signal="pressed" from="CanvasLayer/Panel2/VBoxContainer/Button3" to="CanvasLayer" method="_on_load_pressed"]
-[connection signal="pressed" from="CanvasLayer/Panel2/VBoxContainer/Button4" to="CanvasLayer" method="_on_quit_pressed"]
+[connection signal="pressed" from="Menu/Panel/Buttons/Resume" to="Menu" method="_on_resume_pressed"]
+[connection signal="pressed" from="Menu/Panel/Buttons/Save" to="Menu" method="_on_save_pressed"]
+[connection signal="pressed" from="Menu/Panel/Buttons/Load" to="Menu" method="_on_load_pressed"]
+[connection signal="pressed" from="Menu/Panel/Buttons/Exit" to="Menu" method="_on_quit_pressed"]

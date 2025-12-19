@@ -78,9 +78,7 @@ Matplotlib's Inferno color palette is used for visualization.
 
 ### 5. Undo/Redo + Menu
 
-Implemented undo/redo using the wonderful [https://gameprogrammingpatterns.com/command.html](command pattern) alongside a simple menu
-
-Matplotlib's Inferno color palette is used for visualization.
+Implemented undo/redo using the wonderful [https://gameprogrammingpatterns.com/command.html](command pattern) alongside a simple menu.
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-19 15-34-48.png">
@@ -91,6 +89,17 @@ Matplotlib's Inferno color palette is used for visualization.
 <p align="center">
   <img src="figures/development_snapshots/Screencast from 2025年十二月19日 15時35分07秒.gif" width="800">
 </p>
+
+### 6. Implement better lighting by better approximating normals
+
+Compute vertex normals in marching cubes. The below figure shows before (left) and after (right).
+
+<p align="center">
+  <a href="figures/development_snapshots/Screenshot from 2025-12-19 15-57-59.png">
+    <img src="figures/development_snapshots/Screenshot from 2025-12-19 15-57-59.png" width="800">
+  </a>
+</p>
+
 
 ## Current Features
 

@@ -676,6 +676,7 @@ func _ready():
 
 func generate_mesh():
 	var vertices: PackedVector3Array = []
+	var normals: PackedVector3Array = []
 	var indices:  PackedInt32Array   = []
 	var colors:   PackedColorArray   = []
 
@@ -685,7 +686,7 @@ func generate_mesh():
 		for y in range(SIZE_Y - 1):
 			for z in range(SIZE_Z - 1):
 				var before := vertices.size()
-				march_cube(x, y, z, vertices, colors)
+				march_cube(x, y, z, vertices, normals, colors)
 				var after := vertices.size()
 				if DEBUG_MESH:
 					print("cube (", x, y, z, ") emitted ", (after - before) / 3, " triangles")
@@ -701,6 +702,7 @@ func generate_mesh():
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
 	arrays[Mesh.ARRAY_COLOR]  = colors
 	#arrays[Mesh.ARRAY_INDEX] = indices
 
@@ -723,7 +725,7 @@ func generate_mesh():
 
 
 
-func march_cube(x, y, z, vertices, colors):
+func march_cube(x, y, z, vertices, normals, colors):
 	var cube = []
 
 
@@ -751,8 +753,10 @@ func march_cube(x, y, z, vertices, colors):
 
 	var vert_list  = []
 	var color_list = []
+	var normal_list = []
 	vert_list.resize(12)
 	color_list.resize(12)
+	normal_list.resize(12)
 
 	# Interpolate edges that are crossed
 	# At this stage, the algorithm only knows that the cube surface crosses a given edge somewhere
@@ -765,6 +769,7 @@ func march_cube(x, y, z, vertices, colors):
 			var res          = interpolate_edge_with_color(Vector3i(x, y, z), edge)
 			vert_list[edge]  = res.pos
 			color_list[edge] = res.color
+			normal_list[edge] = sample_gradient(res.pos)
 
 			if dbg(x,y,z):
 				if is_nan(res.pos.x) or is_nan(res.pos.y) or is_nan(res.pos.z):
@@ -785,6 +790,10 @@ func march_cube(x, y, z, vertices, colors):
 		var a  = vert_list[i0]
 		var b  = vert_list[i1]
 		var c  = vert_list[i2]
+
+		var na = normal_list[i0]
+		var nb = normal_list[i1]
+		var nc = normal_list[i2]
 
 		var c1 = color_list[i0]
 		var c2 = color_list[i1]
@@ -807,6 +816,10 @@ func march_cube(x, y, z, vertices, colors):
 		vertices.append(a)
 		vertices.append(c)
 		vertices.append(b)
+
+		normals.append(na)
+		normals.append(nc)
+		normals.append(nb)
 
 		colors.append(c1)
 		colors.append(c3)
@@ -883,3 +896,16 @@ func interpolate_edge_with_color(base: Vector3i, edge: int):
 
 
 	return { "pos": pos, "color": col }
+	
+func sample_gradient(p: Vector3) -> Vector3:
+	var pi = Vector3i(round(p.x), round(p.y), round(p.z))
+	var eps := 1.0
+
+	var dx = get_density(Vector3i(pi + Vector3i(eps, 0, 0))) \
+		   - get_density(Vector3i(pi - Vector3i(eps, 0, 0)))
+	var dy = get_density(Vector3i(pi + Vector3i(0, eps, 0))) \
+		   - get_density(Vector3i(pi - Vector3i(0, eps, 0)))
+	var dz = get_density(Vector3i(pi + Vector3i(0, 0, eps))) \
+		   - get_density(Vector3i(pi - Vector3i(0, 0, eps)))
+
+	return Vector3(dx, dy, dz).normalized()
