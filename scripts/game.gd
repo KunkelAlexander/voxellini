@@ -36,16 +36,16 @@ func _apply_mouse_mode():
 func get_world() -> Node:
 	return get_tree().get_first_node_in_group("world")
 	
-func save_world():
+func save_world(filename):
 	var world = get_world()
 	if world:
-		SaveManager.save_world_to_file(world, "user://world.json")
+		SaveManager.save_world_to_file(world, filename)
 	
 
-func load_world():
+func load_world(filename):
 	var world = get_world()
 	if world:
-		SaveManager.load_world_from_file(world, "user://world.json")
+		SaveManager.load_world_from_file(world, filename)
 
 		# Let other components know 
 		emit_signal("world_loaded", world)

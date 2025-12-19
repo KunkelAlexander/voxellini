@@ -108,9 +108,14 @@ custom_minimum_size = Vector2(320, 56)
 layout_mode = 2
 text = "Quit"
 
+[node name="FileDialog" type="FileDialog" parent="Menu"]
+access = 1
+filters = PackedStringArray("*.json")
+
 [node name="Node" type="Node" parent="."]
 
 [connection signal="pressed" from="Menu/Panel/Buttons/Resume" to="Menu" method="_on_resume_pressed"]
 [connection signal="pressed" from="Menu/Panel/Buttons/Save" to="Menu" method="_on_save_pressed"]
 [connection signal="pressed" from="Menu/Panel/Buttons/Load" to="Menu" method="_on_load_pressed"]
 [connection signal="pressed" from="Menu/Panel/Buttons/Exit" to="Menu" method="_on_quit_pressed"]
+[connection signal="file_selected" from="Menu/FileDialog" to="Menu" method="_on_file_dialog_file_selected"]

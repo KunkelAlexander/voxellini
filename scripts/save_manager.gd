@@ -10,35 +10,58 @@ func key_to_v3i(s: String) -> Vector3i:
 		int(parts[1]),
 		int(parts[2])
 	)
-
 func serialize_world(world: Node) -> Dictionary:
-	var density := {}
-	for p in world.get_density_field().keys():
-		density[v3i_to_key(p)] = world.get_density_field()[p]
+	var chunks_data := {}
 
-	var material := {}
-	for p in world.get_material_field().keys():
-		material[v3i_to_key(p)] = world.get_material_field()[p]
+	for chunk_coord in world.chunks.keys():
+		var chunk = world.chunks[chunk_coord]
+
+		var density := {}
+		for p in chunk.get_density_field().keys():
+			density[v3i_to_key(p)] = chunk.get_density_field()[p]
+
+		var material := {}
+		for p in chunk.get_material_field().keys():
+			material[v3i_to_key(p)] = chunk.get_material_field()[p]
+
+		# Only store non-empty chunks
+		if density.size() > 0 or material.size() > 0:
+			chunks_data[v3i_to_key(chunk_coord)] = {
+				"density": density,
+				"material": material
+			}
 
 	return {
 		"version": 1,
-		"density": density,
-		"material": material
+		"chunks": chunks_data
 	}
 
 func deserialize_world(world: Node, data: Dictionary):
-	var density := {}
-	for key in data["density"]:
-		density[key_to_v3i(key)] = float(data["density"][key])
+	assert(data.has("chunks"), "Invalid world save data")
 
-	var material := {}
-	for key in data["material"]:
-		material[key_to_v3i(key)] = int(data["material"][key])
+	# Optional: clear existing chunks
+	for c in world.chunks.keys():
+		world.chunks[c].queue_free()
+	world.chunks.clear()
 
-	world.set_density_field(density)
-	world.set_material_field(material)
-	world.generate_mesh()
-	
+	for chunk_key in data["chunks"].keys():
+		var chunk_coord := key_to_v3i(chunk_key)
+		var chunk_data = data["chunks"][chunk_key]
+
+		var chunk = world.get_or_create_chunk(chunk_coord)
+
+		var density := {}
+		for key in chunk_data["density"]:
+			density[key_to_v3i(key)] = float(chunk_data["density"][key])
+
+		var material := {}
+		for key in chunk_data["material"]:
+			material[key_to_v3i(key)] = int(chunk_data["material"][key])
+
+		chunk.set_density_field(density)
+		chunk.set_material_field(material)
+		chunk.mark_dirty()
+
 func save_world_to_file(world: Node, path: String):
 	var data = serialize_world(world)
 	var json = JSON.stringify(data)
