@@ -1,25 +1,26 @@
-[gd_scene load_steps=11 format=3 uid="uid://dt1wmc4rob5kn"]
+[gd_scene load_steps=12 format=3 uid="uid://dt1wmc4rob5kn"]
 
 [ext_resource type="Script" uid="uid://dwtmro20xp3vn" path="res://scripts/player.gd" id="1_k0juu"]
 [ext_resource type="Script" uid="uid://cy4iyllw61jrh" path="res://scripts/voxel_terrain.gd" id="2_71j4m"]
+[ext_resource type="Script" uid="uid://b6706qvgfv0y6" path="res://scripts/bounding_box.gd" id="3_71j4m"]
 [ext_resource type="Script" uid="uid://dsucplivxani2" path="res://scripts/grid_debug.gd" id="3_qfnet"]
 [ext_resource type="Script" uid="uid://bdi6kro28lghl" path="res://scripts/voxel_interactor.gd" id="4_i7141"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_f3sb7"]
-sky_top_color = Color(0.49907, 0, 0.0521424, 1)
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_71j4m"]
 
-[sub_resource type="Sky" id="Sky_fj7yv"]
-sky_material = SubResource("ProceduralSkyMaterial_f3sb7")
+[sub_resource type="Sky" id="Sky_qfnet"]
+sky_material = SubResource("ProceduralSkyMaterial_71j4m")
 
 [sub_resource type="Environment" id="Environment_tlwt5"]
 background_mode = 2
-sky = SubResource("Sky_fj7yv")
+sky = SubResource("Sky_qfnet")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fj7yv"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_tlwt5"]
 material = SubResource("StandardMaterial3D_fj7yv")
-size = Vector2(50, 50)
+size = Vector2(16, 16)
+center_offset = Vector3(8, 0, 8)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_aqk2v"]
 size = Vector3(50, 2, 50)
@@ -35,7 +36,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.777131, 0.562468, -0.282307, 0.078974, 0.357873, 0.930425, 0.624364, -0.745357, 0.233694, -3.66706, 15.7697, -6.84261)
 light_indirect_energy = 2.833
-light_negative = true
 shadow_enabled = true
 
 [node name="Sky" type="WorldEnvironment" parent="."]
@@ -50,6 +50,9 @@ skeleton = NodePath("../..")
 [node name="StaticBody3D" type="StaticBody3D" parent="VoxelTerrain"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="VoxelTerrain/StaticBody3D"]
+
+[node name="BoundingBox" type="Node3D" parent="VoxelTerrain"]
+script = ExtResource("3_71j4m")
 
 [node name="GridDebug" type="Node3D" parent="."]
 visible = false
