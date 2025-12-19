@@ -1,10 +1,11 @@
-[gd_scene load_steps=12 format=3 uid="uid://dt1wmc4rob5kn"]
+[gd_scene load_steps=13 format=3 uid="uid://dt1wmc4rob5kn"]
 
 [ext_resource type="Script" uid="uid://dwtmro20xp3vn" path="res://scripts/player.gd" id="1_k0juu"]
 [ext_resource type="Script" uid="uid://cy4iyllw61jrh" path="res://scripts/voxel_terrain.gd" id="2_71j4m"]
 [ext_resource type="Script" uid="uid://b6706qvgfv0y6" path="res://scripts/bounding_box.gd" id="3_71j4m"]
 [ext_resource type="Script" uid="uid://dsucplivxani2" path="res://scripts/grid_debug.gd" id="3_qfnet"]
 [ext_resource type="Script" uid="uid://bdi6kro28lghl" path="res://scripts/voxel_interactor.gd" id="4_i7141"]
+[ext_resource type="Script" uid="uid://ctku6nm8mvx4j" path="res://scripts/pause_menu.gd" id="7_4mrxx"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_71j4m"]
 
@@ -28,6 +29,7 @@ size = Vector3(50, 2, 50)
 [node name="World" type="Node3D"]
 
 [node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 8.98155, 0)
 script = ExtResource("1_k0juu")
 
 [node name="Camera3D" type="Camera3D" parent="Player"]
@@ -52,6 +54,7 @@ skeleton = NodePath("../..")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="VoxelTerrain/StaticBody3D"]
 
 [node name="BoundingBox" type="Node3D" parent="VoxelTerrain"]
+visible = false
 script = ExtResource("3_71j4m")
 
 [node name="GridDebug" type="Node3D" parent="."]
@@ -74,4 +77,51 @@ skeleton = NodePath("../..")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
 shape = SubResource("BoxShape3D_aqk2v")
 
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+script = ExtResource("7_4mrxx")
+
+[node name="Panel2" type="Panel" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Panel2"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -48.5
+offset_top = -68.0
+offset_right = 48.5
+offset_bottom = 68.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Button" type="Button" parent="CanvasLayer/Panel2/VBoxContainer"]
+custom_minimum_size = Vector2(320, 56)
+layout_mode = 2
+text = "Resume"
+
+[node name="Button2" type="Button" parent="CanvasLayer/Panel2/VBoxContainer"]
+custom_minimum_size = Vector2(320, 56)
+layout_mode = 2
+text = "Save World"
+
+[node name="Button3" type="Button" parent="CanvasLayer/Panel2/VBoxContainer"]
+custom_minimum_size = Vector2(320, 56)
+layout_mode = 2
+text = "Load World"
+
+[node name="Button4" type="Button" parent="CanvasLayer/Panel2/VBoxContainer"]
+custom_minimum_size = Vector2(320, 56)
+layout_mode = 2
+text = "Quit"
+
+[connection signal="pressed" from="CanvasLayer/Panel2/VBoxContainer/Button" to="CanvasLayer" method="_on_resume_pressed"]
+[connection signal="pressed" from="CanvasLayer/Panel2/VBoxContainer/Button2" to="CanvasLayer" method="_on_save_pressed"]
+[connection signal="pressed" from="CanvasLayer/Panel2/VBoxContainer/Button3" to="CanvasLayer" method="_on_load_pressed"]
+[connection signal="pressed" from="CanvasLayer/Panel2/VBoxContainer/Button4" to="CanvasLayer" method="_on_quit_pressed"]

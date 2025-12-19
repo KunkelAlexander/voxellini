@@ -76,6 +76,22 @@ Matplotlib's Inferno color palette is used for visualization.
   </a>
 </p>
 
+### 5. Undo/Redo + Menu
+
+Implemented undo/redo using the wonderful [https://gameprogrammingpatterns.com/command.html](command pattern) alongside a simple menu
+
+Matplotlib's Inferno color palette is used for visualization.
+
+<p align="center">
+  <a href="figures/development_snapshots/Screenshot from 2025-12-19 15-34-48.png">
+    <img src="figures/development_snapshots/Screenshot from 2025-12-19 15-34-48.png" width="800">
+  </a>
+</p>
+
+<p align="center">
+  <img src="figures/development_snapshots/Screencast from 2025年十二月19日 15時35分07秒.gif" width="800">
+</p>
+
 ## Current Features
 
 * Marching Cubes terrain with linear interpolation
@@ -83,6 +99,8 @@ Matplotlib's Inferno color palette is used for visualization.
 * Material painting with vertex colors
 * Shared sculpt / paint brush system
 * Real-time brush preview
+* Undo/Redo
+* Menu
 
 ## Controls (current)
 
@@ -95,6 +113,8 @@ Matplotlib's Inferno color palette is used for visualization.
 | Paint material      | Mouse Button (paint mode) |
 | Change brush radius | Mouse Wheel               |
 | Cycle material      | `Tab`                     |
+| Move                | WASD + Space + Shift      |
+| Undo/redo           | Control + z/y             |
 
 
 ## Planned Work
@@ -102,7 +122,6 @@ Matplotlib's Inferno color palette is used for visualization.
 * [ ] Chunked terrain
 * [ ] Performance optimizations
 * [ ] Tool & material UI
-* [ ] Undo / redo
 * [ ] Texture-based materials
 * [ ] Save / load
 * [ ] Additional sculpting tools

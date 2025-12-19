@@ -50,21 +50,12 @@ func _ready():
 	add_child(selection_marker)
 
 
-func get_camera_ray(max_dist := 100.0) -> Dictionary:
-	var origin = camera.global_transform.origin
-	var dir = camera.project_ray_normal(
-		get_viewport().get_visible_rect().size * 0.5
-	)
-	var to = origin + dir * max_dist
-
-	var query = PhysicsRayQueryParameters3D.create(origin, to)
-	query.collide_with_bodies = true
-	query.collide_with_areas = false
-
-	return get_world_3d().direct_space_state.intersect_ray(query)
-
 
 func _process(_dt):
+	
+	if Game.mode != Game.Mode.GAMEPLAY:
+		return
+		
 	var hit = get_camera_ray()
 
 	if hit.is_empty():
@@ -111,7 +102,7 @@ func _process_sculpting():
 			last_hit_position,
 			+BRUSH_STRENGTH,
 			brush_radius,
-			current_material_id,
+			terrain.DEFAULT_MATERIAL,
 			active_command
 		)
 
@@ -124,10 +115,15 @@ func _process_painting():
 			last_hit_position,
 			0,
 			brush_radius, 
-			current_material_id
+			current_material_id,
+			active_command
 		)
 
 func _unhandled_input(event):
+	
+	if Game.mode != Game.Mode.GAMEPLAY:
+		return
+		
 	# Start sculpt stroke
 	if event.is_action_pressed("add_density") or event.is_action_pressed("remove_density"):
 		if active_command == null:
@@ -216,3 +212,17 @@ func update_brush_visual():
 	var mat := selection_marker.material_override as StandardMaterial3D
 	var c := material_palette[current_material_id]
 	mat.albedo_color = Color(c.r, c.g, c.b, 0.25)
+
+
+func get_camera_ray(max_dist := 100.0) -> Dictionary:
+	var origin = camera.global_transform.origin
+	var dir = camera.project_ray_normal(
+		get_viewport().get_visible_rect().size * 0.5
+	)
+	var to = origin + dir * max_dist
+
+	var query = PhysicsRayQueryParameters3D.create(origin, to)
+	query.collide_with_bodies = true
+	query.collide_with_areas = false
+
+	return get_world_3d().direct_space_state.intersect_ray(query)
