@@ -100,6 +100,16 @@ Compute vertex normals in marching cubes. The below figure shows before (left) a
   </a>
 </p>
 
+### 6. Implement chunking for larger worlds
+
+Add chunks on demand - loading and unloading are not dynamic yet.
+
+<p align="center">
+  <a href="figures/development_snapshots/Screenshot from 2025-12-19 19-47-35.png">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-19 19-47-35.png" width="800">
+  </a>
+</p>
+
 
 ## Current Features
 
@@ -111,6 +121,7 @@ Compute vertex normals in marching cubes. The below figure shows before (left) a
 * Undo/Redo
 * Save/Load
 * Menu
+* Chunking
 
 ## Controls (current)
 
@@ -130,7 +141,6 @@ Compute vertex normals in marching cubes. The below figure shows before (left) a
 
 ## Planned Work
 
-* [ ] Chunked terrain
 * [ ] Performance optimizations
 * [ ] Tool & material UI
 * [ ] Texture-based materials
