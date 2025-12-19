@@ -217,6 +217,8 @@ func set_density(p: Vector3i, value):
 func set_material(p: Vector3i, value):
 	if density_field.has(p):
 		material_id_field[p] = value
+	else:
+		material_id_field.erase(p)
 
 
 func init_density():
@@ -271,7 +273,7 @@ func add_density_world(world_pos: Vector3, strength: float, radius: float, mater
 				var falloff      := 1.0 - (d / r_f)
 				var delta        := strength * falloff
 				var new_density  := old_density + delta
-				var new_material := material_id
+				var new_material := material_id if delta <= 0 else old_material # Only change material when adding density
 
 				if command:
 					command.record_after(p, new_density, new_material)
@@ -676,7 +678,7 @@ func _ready():
 
 func generate_mesh():
 	var vertices: PackedVector3Array = []
-	var normals: PackedVector3Array = []
+	var normals:  PackedVector3Array = []
 	var indices:  PackedInt32Array   = []
 	var colors:   PackedColorArray   = []
 
@@ -876,7 +878,10 @@ func interpolate_edge_with_color(base: Vector3i, edge: int):
 	var d1 = get_density(p1_i)
 
 	var t = (d0 - ISO_LEVEL) / (d0 - d1)
-
+	
+	# This pulls vertices slightly away from corners and evens out curvature.
+	t = t * t * (3.0 - 2.0 * t) 
+	
 	# Interpolated position
 	var pos = p0 + t * (p1 - p0)
 
