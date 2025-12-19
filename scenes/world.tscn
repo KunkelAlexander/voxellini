@@ -1,9 +1,9 @@
 [gd_scene load_steps=12 format=3 uid="uid://dt1wmc4rob5kn"]
 
 [ext_resource type="Script" uid="uid://dwtmro20xp3vn" path="res://scripts/player.gd" id="1_k0juu"]
-[ext_resource type="Script" uid="uid://cy4iyllw61jrh" path="res://scripts/voxel_terrain.gd" id="2_71j4m"]
-[ext_resource type="Script" uid="uid://b6706qvgfv0y6" path="res://scripts/bounding_box.gd" id="3_71j4m"]
+[ext_resource type="Script" uid="uid://cy4iyllw61jrh" path="res://scripts/voxel_chunk.gd" id="2_71j4m"]
 [ext_resource type="Script" uid="uid://bdi6kro28lghl" path="res://scripts/voxel_interactor.gd" id="4_i7141"]
+[ext_resource type="Script" uid="uid://bm14rwqxjkt1r" path="res://scripts/world.gd" id="5_qfnet"]
 [ext_resource type="Script" uid="uid://ctku6nm8mvx4j" path="res://scripts/pause_menu.gd" id="7_4mrxx"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_71j4m"]
@@ -42,24 +42,16 @@ shadow_enabled = true
 [node name="Sky" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_tlwt5")
 
-[node name="World" type="Node3D" parent="."]
+[node name="VoxelChunk" type="Node3D" parent="."]
 script = ExtResource("2_71j4m")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="World"]
-skeleton = NodePath("../..")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="World"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/StaticBody3D"]
-
-[node name="BoundingBox" type="Node3D" parent="World"]
-visible = false
-script = ExtResource("3_71j4m")
 
 [node name="VoxelInteractor" type="Node3D" parent="."]
 script = ExtResource("4_i7141")
 camera_path = NodePath("../Player/Camera3D")
 terrain_path = NodePath("../World")
+
+[node name="World" type="Node3D" parent="."]
+script = ExtResource("5_qfnet")
 
 [node name="Ground" type="StaticBody3D" parent="."]
 
@@ -115,6 +107,8 @@ text = "Load World"
 custom_minimum_size = Vector2(320, 56)
 layout_mode = 2
 text = "Quit"
+
+[node name="Node" type="Node" parent="."]
 
 [connection signal="pressed" from="Menu/Panel/Buttons/Resume" to="Menu" method="_on_resume_pressed"]
 [connection signal="pressed" from="Menu/Panel/Buttons/Save" to="Menu" method="_on_save_pressed"]

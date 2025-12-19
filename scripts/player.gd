@@ -25,7 +25,7 @@ func _unhandled_input(event):
 	if event.is_action_pressed("exit"):
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	if Game.mode != Game.Mode.GAMEPLAY:
 		return
 

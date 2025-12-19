@@ -4,7 +4,7 @@ This repository documents the development of a **voxel terrain editor** built in
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-18 18-55-07.png">
-    <img src="figures/development_snapshots/Screenshot from 2025-12-18 18-55-07.png" width="800">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-18 18-55-07.png" width="800">
   </a>
 </p>
 
@@ -26,7 +26,7 @@ The focus at this stage was correctness and understanding the algorithm.
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-18 10-41-31.png">
-    <img src="figures/development_snapshots/Screenshot from 2025-12-18 10-41-31.png" width="800">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-18 10-41-31.png" width="800">
   </a>
 </p>
 
@@ -43,7 +43,7 @@ After fixing corner ordering and lookup tables, the algorithm produced a stable 
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-18 14-29-33.png">
-    <img src="figures/development_snapshots/Screenshot from 2025-12-18 14-29-33.png" width="800">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-18 14-29-33.png" width="800">
   </a>
 </p>
 
@@ -54,7 +54,7 @@ Interaction was added by raycasting from the camera and sculpting directly on th
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-18 15-49-45.png">
-    <img src="figures/development_snapshots/Screenshot from 2025-12-18 15-49-45.png" width="800">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-18 15-49-45.png" width="800">
   </a>
 </p>
 
@@ -72,7 +72,7 @@ Matplotlib's Inferno color palette is used for visualization.
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-18 18-55-07.png">
-    <img src="figures/development_snapshots/Screenshot from 2025-12-18 18-55-07.png" width="800">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-18 18-55-07.png" width="800">
   </a>
 </p>
 
@@ -82,7 +82,7 @@ Implemented undo/redo using the wonderful [https://gameprogrammingpatterns.com/c
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-19 15-34-48.png">
-    <img src="figures/development_snapshots/Screenshot from 2025-12-19 15-34-48.png" width="800">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-19 15-34-48.png" width="800">
   </a>
 </p>
 
@@ -96,7 +96,7 @@ Compute vertex normals in marching cubes. The below figure shows before (left) a
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-19 15-57-59.png">
-    <img src="figures/development_snapshots/Screenshot from 2025-12-19 15-57-59.png" width="800">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-19 15-57-59.png" width="800">
   </a>
 </p>
 

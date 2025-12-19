@@ -7,8 +7,8 @@ class_name VoxelCommand
 # A command does not decide when to edit or performs the edit - it just describes how to do the edit
 # In the following, we derive from the VoxelCommand class to implement different commands such as a brush stroke
 
-func execute(terrain):
+func execute(_terrain):
 	push_error("execute() not implemented")
 
-func undo(terrain):
+func undo(_terrain):
 	push_error("undo() not implemented")

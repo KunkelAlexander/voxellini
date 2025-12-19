@@ -230,6 +230,6 @@ func get_camera_ray(max_dist := 100.0) -> Dictionary:
 
 	return get_world_3d().direct_space_state.intersect_ray(query)
 
-func _on_world_loaded(world):
+func _on_world_loaded(_world):
 	undo_stack.clear()
 	redo_stack.clear()

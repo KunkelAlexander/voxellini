@@ -1,5 +1,3 @@
-extends Node3D
-
 # ============================================================================
 # MARCHING CUBES — DETAILED IMPLEMENTATION OVERVIEW
 # ============================================================================
@@ -153,15 +151,22 @@ extends Node3D
 # ---------------------------------------------------------------------------
 # END OF MARCHING CUBES OVERVIEW
 # ============================================================================
+extends Node3D
+class_name VoxelChunk
 
+var mesh_instance: MeshInstance3D
+var static_body: StaticBody3D
+var collision_shape: CollisionShape3D
 
-@onready var mesh_instance := $MeshInstance3D
-@onready var static_body := $StaticBody3D
-@onready var collision_shape := $StaticBody3D/CollisionShape3D
+var chunk_coord: Vector3i        # chunk-space coordinate
+var world: Node
 
-const SIZE_X           := 16
-const SIZE_Y           := 16
-const SIZE_Z           := 16
+const SIZE := 16
+
+const SIZE_X           := SIZE
+const SIZE_Y           := SIZE
+const SIZE_Z           := SIZE
+
 const ISO_LEVEL        := +0.0
 const AIR              := +1.0  # or any positive value = outside
 const SOLID            := -1.0
@@ -195,10 +200,9 @@ const INFERNO_COLORS := [
 	Color(0.988, 1.000, 0.643),  # bright
 ]
 
-
-
-func dbg(x, y, z) -> bool:
-	return DEBUG
+var dirty := false
+func mark_dirty():
+	dirty = true
 
 func get_density_field() -> Dictionary:
 	return density_field
@@ -212,15 +216,32 @@ func set_density_field(d: Dictionary):
 func set_material_field(m: Dictionary):
 	material_id_field = m
 
-
 # Getters and setters for material and density fields
 # Index the density and material fields using integers only
 func get_density(p: Vector3i) -> float:
 	return density_field.get(p, AIR)
 
+func get_density_local_or_world(p: Vector3i) -> float:
+	if owns_sample(p):
+		return get_density(p)
+
+	print("Getting world sample for ", p)
+	# Convert to world position
+	var world_p := chunk_coord * SIZE + p
+	return world.get_density(world_p)
+
 func get_material(p: Vector3i) -> int:
 	return material_id_field.get(p, DEFAULT_MATERIAL)
 
+
+func get_material_local_or_world(p: Vector3i) -> float:
+	if owns_sample(p):
+		return get_material(p)
+
+	# Convert to world position
+	var world_p := chunk_coord * SIZE + p
+	return world.get_material(world_p)
+	
 func set_density(p: Vector3i, value):
 	if value > 0.0:
 		density_field.erase(p)
@@ -235,16 +256,22 @@ func set_material(p: Vector3i, value):
 
 
 func init_density():
-	var center = Vector3(8, 8, 8)
-	var radius = 6.0
+	if true:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 12345  # deterministic across runs
 
-	for x in range(0, 16):
-		for y in range(0, 16):
-			for z in range(0, 16):
-				var p = Vector3i(x, y, z)
-				var d = p.distance_to(center) - radius
-				if d < 0.0:
-					set_density(p, d)
+	for x in range(SIZE):
+		for y in range(SIZE):
+			for z in range(SIZE):
+				var p := Vector3i(x, y, z)
+
+				# Random density around ISO_LEVEL
+				var d := rng.randf_range(-1.0, 1.0)
+
+				if d <= 0.0:
+					density_field[p] = d
+					material_id_field[p] = rng.randi_range(0, material_palette.size() - 1)
 
 func has_density(p: Vector3i) -> bool:
 	return density_field.has(p)
@@ -252,50 +279,8 @@ func has_density(p: Vector3i) -> bool:
 func is_ground(p: Vector3i) -> bool:
 	return p.y == 0
 
-func is_within_bounding_box(p: Vector3i) -> bool:
-	return (p.x > 0 && p.x < SIZE_X - 1) && (p.y >= 0 && p.y < SIZE_Y - 1) && (p.z > 0 && p.z < SIZE_Z -1)
-
-
-func add_density_world(world_pos: Vector3, strength: float, radius: float, material_id: int = DEFAULT_MATERIAL, command: VoxelBrushCommand = null):
-	var center := Vector3i(
-		floor(world_pos.x),
-		floor(world_pos.y),
-		floor(world_pos.z)
-	)
-	var r   := int(ceil(radius))
-	var r_f := float(radius)
-
-	for x in range(center.x - r, center.x + r + 1):
-		for y in range(center.y - r, center.y + r + 1):
-			for z in range(center.z - r, center.z + r + 1):
-				var p := Vector3i(x, y, z)
-				var d := Vector3(p).distance_to(world_pos)
-
-				# Check whether point is within brush radius and bounding box
-				if d > r_f or not is_within_bounding_box(p):
-					continue
-
-
-				# Calculate new density and material fields and record change
-				var old_density  := get_density(p)
-				var old_material := get_material(p)
-
-				if command:
-					command.record_before(p, old_density, old_material)
-
-				var falloff      := 1.0 - (d / r_f)
-				var delta        := strength * falloff
-				var new_density  := old_density + delta
-				var new_material := material_id if delta <= 0 else old_material # Only change material when adding density
-
-				if command:
-					command.record_after(p, new_density, new_material)
-
-				# Update density and material fields
-				set_density(p, new_density)
-				set_material(p, new_material)
-
-	generate_mesh()
+func owns_sample(p: Vector3i) -> bool:
+	return (p.x >= 0 && p.x < SIZE_X) && (p.y >= 0 && p.y < SIZE_Y) && (p.z >= 0 && p.z < SIZE_Z)
 
 
 # Sample cube corners
@@ -685,21 +670,37 @@ var EDGE_TO_POINTS = [
 ]
 
 func _ready():
-	add_to_group("world")
+	
+	# Mesh
+	mesh_instance = MeshInstance3D.new()
+	mesh_instance.name = "MeshInstance3D"
+	add_child(mesh_instance)
+
+	# Physics
+	static_body = StaticBody3D.new()
+	static_body.name = "StaticBody3D"
+	add_child(static_body)
+
+	collision_shape = CollisionShape3D.new()
+	collision_shape.name = "CollisionShape3D"
+	static_body.add_child(collision_shape)
+	
 	init_density()
-	generate_mesh()
+	#mark_dirty()
 
-
+func _process(_delta):
+	if dirty:
+		generate_mesh()
+		dirty = false
+		
 func generate_mesh():
 	var vertices: PackedVector3Array = []
 	var normals:  PackedVector3Array = []
-	var indices:  PackedInt32Array   = []
 	var colors:   PackedColorArray   = []
 
 	if DEBUG_MESH:
 		print("Number of density points: ", density_field.size())
 		print("Number of material points: ", material_id_field.size())
-	var index := 0
 
 	for x in range(SIZE_X - 1):
 		for y in range(SIZE_Y - 1):
@@ -708,22 +709,21 @@ func generate_mesh():
 				march_cube(x, y, z, vertices, normals, colors)
 				var after := vertices.size()
 				if DEBUG_MESH:
-					print("cube (", x, y, z, ") emitted ", (after - before) / 3, " triangles")
-
+					print("cube (", x, y, z, ") emitted ", (after - before) / 3., " triangles")
 
 	if DEBUG_MESH:
 		print("total vertices:", vertices.size())
-		print("total triangles:", vertices.size() / 3)
-
 		for i in range(vertices.size()):
 			print("v[", i, "] = ", vertices[i])
 
+	if vertices.size() == 0: 
+		return
+		
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[Mesh.ARRAY_NORMAL] = normals
 	arrays[Mesh.ARRAY_COLOR]  = colors
-	#arrays[Mesh.ARRAY_INDEX] = indices
 
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
@@ -744,13 +744,12 @@ func generate_mesh():
 
 
 
-func march_cube(x, y, z, vertices, normals, colors):
+func march_cube(x: int, y: int, z: int, vertices, normals, colors):
 	var cube = []
-
 
 	for i in range(8):
 		var p_i = Vector3i(x, y, z) + cube_corner_offset(i)
-		var d   = get_density(p_i)
+		var d   = get_density_local_or_world(p_i)
 		cube.append(d)
 
 	# Check whether densities at corners are above ISO_LEVEL threshold
@@ -785,12 +784,12 @@ func march_cube(x, y, z, vertices, normals, colors):
 	# How to connect neighboring cubes consistently
 	for edge in range(12):
 		if edges & (1 << edge):
-			var res          = interpolate_edge_with_color(Vector3i(x, y, z), edge)
-			vert_list[edge]  = res.pos
-			color_list[edge] = res.color
+			var res           = interpolate_edge_with_color(Vector3i(x, y, z), edge)
+			vert_list[edge]   = res.pos
+			color_list[edge]  = res.color
 			normal_list[edge] = sample_gradient(res.pos)
 
-			if dbg(x,y,z):
+			if DEBUG:
 				if is_nan(res.pos.x) or is_nan(res.pos.y) or is_nan(res.pos.z):
 					print("!!! NaN vertex on edge ", edge)
 				else:
@@ -799,7 +798,7 @@ func march_cube(x, y, z, vertices, normals, colors):
 					)
 	# Iterate over vertices
 	var i := 0
-	var flip := false
+	
 	while TRI_TABLE[cube_index][i] != -1:
 
 		var i0 = TRI_TABLE[cube_index][i]
@@ -818,7 +817,7 @@ func march_cube(x, y, z, vertices, normals, colors):
 		var c2 = color_list[i1]
 		var c3 = color_list[i2]
 
-		if dbg(x,y,z):
+		if DEBUG:
 			print("triangle: edges ", i0, ",", i1, ",", i2)
 			print("  A=", a)
 			print("  B=", b)
@@ -851,9 +850,7 @@ func material_id_to_color(id: int) -> Color:
 	return material_palette.get(id, INFERNO_COLORS[0])
 
 func sample_material_color(p: Vector3i):
-	if not density_field.has(p):
-		return null # signal "no material"
-	return material_id_to_color(get_material(p))
+	return material_id_to_color(get_material_local_or_world(p))
 
 # Minimal version: Constant interpolation
 # Assume that vertex of surface lies at midpoint between corners
@@ -865,22 +862,6 @@ func interpolate_edge_constant(base: Vector3i, edge: int):
 
 # Linear interpolation
 # Assume that vertex of surface lies at density-weighted midpoint of corners
-func interpolate_edge(base: Vector3i, edge: int):
-	var c0 = EDGE_TO_POINTS[edge][0]
-	var c1 = EDGE_TO_POINTS[edge][1]
-
-	var p0_i = base + cube_corner_offset(c0)
-	var p1_i = base + cube_corner_offset(c1)
-
-	var p0  = Vector3(p0_i)
-	var p1  = Vector3(p1_i)
-
-	var d0 = get_density(p0_i)
-	var d1 = get_density(p1_i)
-
-	var t = (d0 - ISO_LEVEL) / (d0 - d1)
-	return p0 + t * (p1 - p0)
-
 func interpolate_edge_with_color(base: Vector3i, edge: int):
 	var c0 = EDGE_TO_POINTS[edge][0]
 	var c1 = EDGE_TO_POINTS[edge][1]
@@ -891,13 +872,13 @@ func interpolate_edge_with_color(base: Vector3i, edge: int):
 	var p0  = Vector3(p0_i)
 	var p1  = Vector3(p1_i)
 
-	var d0 = get_density(p0_i)
-	var d1 = get_density(p1_i)
+	var d0 = get_density_local_or_world(p0_i)
+	var d1 = get_density_local_or_world(p1_i)
 
 	var t = (d0 - ISO_LEVEL) / (d0 - d1)
 	
 	# This pulls vertices slightly away from corners and evens out curvature.
-	t = t * t * (3.0 - 2.0 * t) 
+	#t = t * t * (3.0 - 2.0 * t) 
 	
 	# Interpolated position
 	var pos = p0 + t * (p1 - p0)
@@ -921,13 +902,13 @@ func interpolate_edge_with_color(base: Vector3i, edge: int):
 	
 func sample_gradient(p: Vector3) -> Vector3:
 	var pi = Vector3i(round(p.x), round(p.y), round(p.z))
-	var eps := 1.0
+	var eps := 1
 
-	var dx = get_density(Vector3i(pi + Vector3i(eps, 0, 0))) \
-		   - get_density(Vector3i(pi - Vector3i(eps, 0, 0)))
-	var dy = get_density(Vector3i(pi + Vector3i(0, eps, 0))) \
-		   - get_density(Vector3i(pi - Vector3i(0, eps, 0)))
-	var dz = get_density(Vector3i(pi + Vector3i(0, 0, eps))) \
-		   - get_density(Vector3i(pi - Vector3i(0, 0, eps)))
+	var dx = get_density_local_or_world(Vector3i(pi + Vector3i(eps, 0, 0))) \
+		   - get_density_local_or_world(Vector3i(pi - Vector3i(eps, 0, 0)))
+	var dy = get_density_local_or_world(Vector3i(pi + Vector3i(0, eps, 0))) \
+		   - get_density_local_or_world(Vector3i(pi - Vector3i(0, eps, 0)))
+	var dz = get_density_local_or_world(Vector3i(pi + Vector3i(0, 0, eps))) \
+		   - get_density_local_or_world(Vector3i(pi - Vector3i(0, 0, eps)))
 
 	return Vector3(dx, dy, dz).normalized()
