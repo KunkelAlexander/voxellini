@@ -143,7 +143,7 @@ Update all boundary chunks when adding voxels at chunk boundaries. This avoids o
 </p>
 
 ### 10. Performance optimisation
-The global density/material lookup is currently very slow - building a buffer is the way to go. In addition, moving from dictionaries to arrays would probably help with performance. But I wonder whether just writing a compute shader might not force me to rethink some design decisions right away and would solve some of the performance issues.
+The global density/material lookup is currently very slow.
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-20 16-33-55.png">
@@ -151,6 +151,14 @@ The global density/material lookup is currently very slow - building a buffer is
   </a>
 </p>
 
+I made a simple change that drastically improved performance: The chunks do not need to query the world for boundary conditions anymore, but I set the boundary conditions directly when modifying density/material values. In addition, I implemented a chunk update scheduling system that limits the number of meshes regenerated in a given step.
+As a next step, moving from dictionaries to arrays would probably help with performance. But I wonder whether just writing a compute shader might not force me to rethink some design decisions right away and would solve make the marching cubes algorithm much more performant.
+
+<p align="center">
+  <a href="figures/development_snapshots/Screenshot from 2025-12-20 21-02-03.png">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-20 21-02-03.png" width="800">
+  </a>
+</p>
 
 ## Current Features
 

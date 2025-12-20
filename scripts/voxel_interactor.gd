@@ -68,10 +68,13 @@ func _process(_dt):
 
 	# Store surface info
 	# Sticky hit positions
-	last_hit_position =  Vector3i(
-		floor(hit.position.x),
-		floor(hit.position.y),
-		floor(hit.position.z)
+	last_hit_position =  Vector3(
+		#floor(hit.position.x),  # sticky position
+		#floor(hit.position.y),  # sticky position
+		#floor(hit.position.z)  # sticky position
+		hit.position.x,
+		hit.position.y,
+		hit.position.z
 		)
 		
 	last_hit_normal   = hit.normal

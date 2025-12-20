@@ -30,11 +30,11 @@ shader_parameter/cell_color = Color(0, 0.8, 1, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_tlwt5"]
 material = SubResource("ShaderMaterial_4mrxx")
-size = Vector2(100, 100)
+size = Vector2(1000, 10000)
 center_offset = Vector3(8, 2, 8)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_aqk2v"]
-size = Vector3(100, 2, 100)
+size = Vector3(1000, 2, 1000)
 
 [node name="World" type="Node3D"]
 
