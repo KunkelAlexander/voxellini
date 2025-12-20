@@ -72,17 +72,15 @@ func set_density(p: Vector3i, d: float):
 	var chunk = get_or_create_chunk(c)
 	chunk.set_density(l, d)
 	mark_chunk_dirty(c)
-	if DEBUG:
-		print("Chunk: ", c, " Global point: ", p, " Local Point: ", l)
 	
 	# Propagate dirtiness to neighbors if on boundary
 	var neighbor_offsets := get_boundary_neighbor_offsets(p)
 	
-	if DEBUG:
-		print("Neighbours to be updated: ", neighbor_offsets)
 	for offset in neighbor_offsets:
-		var neighbor_chunk = get_or_create_chunk(c + offset)
-		neighbor_chunk.mark_dirty()
+		var neighbor = get_or_create_chunk(c + offset)
+		var halo_l = l - offset * VoxelChunk.SIZE
+		neighbor.set_density_halo(halo_l, d)
+		neighbor.mark_dirty()
 
 
 func set_material(p: Vector3i, m: int):
@@ -100,8 +98,10 @@ func set_material(p: Vector3i, m: int):
 	# Propagate dirtiness to neighbors if on boundary
 	var neighbor_offsets := get_boundary_neighbor_offsets(p)
 	for offset in neighbor_offsets:
-		var neighbor_chunk = get_or_create_chunk(c + offset)
-		neighbor_chunk.mark_dirty()
+		var neighbor = get_or_create_chunk(c + offset)
+		var halo_l = l - offset * VoxelChunk.SIZE
+		neighbor.set_material_halo(halo_l, m)
+		neighbor.mark_dirty()
 
 func get_density(p: Vector3i) -> float:
 	var c = world_to_chunk(p)

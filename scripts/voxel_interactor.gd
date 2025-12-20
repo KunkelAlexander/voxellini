@@ -95,7 +95,6 @@ func _process_sculpting():
 
 	# Sculpting
 	if Input.is_action_pressed("add_density"):
-		print("Last hit position: ", last_hit_position)
 		if DEBUG:
 			print("[Interactor] Add density at", last_hit_position)
 		terrain.add_density_world(

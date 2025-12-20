@@ -203,25 +203,8 @@ func set_material_field(m: Dictionary):
 func get_density(p: Vector3i) -> float:
 	return density_field.get(p, AIR)
 
-func get_density_local_or_world(p: Vector3i) -> float:
-	if owns_sample(p):
-		return get_density(p)
-
-	# Convert to world position
-	var world_p := chunk_coord * SIZE + p
-	return world.get_density(world_p)
-
 func get_material(p: Vector3i) -> int:
 	return material_id_field.get(p, NO_MATERIAL)
-
-
-func get_material_local_or_world(p: Vector3i) -> float:
-	if owns_sample(p):
-		return get_material(p)
-
-	# Convert to world position
-	var world_p := chunk_coord * SIZE + p
-	return world.get_material(world_p)
 	
 func set_density(p: Vector3i, value):
 	if value > 0.0:
@@ -234,7 +217,14 @@ func set_material(p: Vector3i, value):
 		material_id_field[p] = value
 	else:
 		material_id_field.erase(p)
+		
+func set_density_halo(p: Vector3i, value):
+	# local_p is allowed to be outside [0..SIZE-1]
+	set_density(p, value)
 
+func set_material_halo(p: Vector3i, value):
+	# local_p is allowed to be outside [0..SIZE-1]
+	set_material(p, value)
 
 func init_density():
 	if true:
@@ -715,7 +705,7 @@ func march_cube(x: int, y: int, z: int, vertices, normals, colors):
 
 	for i in range(8):
 		var p_i = Vector3i(x, y, z) + cube_corner_offset(i)
-		var d   = get_density_local_or_world(p_i)
+		var d   = get_density(p_i)
 		cube.append(d)
 
 	# Check whether densities at corners are above ISO_LEVEL threshold
@@ -815,7 +805,7 @@ func material_id_to_color(id: int) -> Color:
 	return MaterialPalette.get_color(id)
 
 func sample_material_color(p: Vector3i):
-	var material_id = get_material_local_or_world(p)
+	var material_id = get_material(p)
 	if material_id == NO_MATERIAL:
 		return null
 	return material_id_to_color(material_id)
@@ -840,8 +830,8 @@ func interpolate_edge_with_color(base: Vector3i, edge: int):
 	var p0  = Vector3(p0_i)
 	var p1  = Vector3(p1_i)
 
-	var d0 = get_density_local_or_world(p0_i)
-	var d1 = get_density_local_or_world(p1_i)
+	var d0 = get_density(p0_i)
+	var d1 = get_density(p1_i)
 
 	var t = (d0 - ISO_LEVEL) / (d0 - d1)
 	
@@ -872,11 +862,11 @@ func sample_gradient(p: Vector3) -> Vector3:
 	var pi = Vector3i(round(p.x), round(p.y), round(p.z))
 	var eps := 1
 
-	var dx = get_density_local_or_world(Vector3i(pi + Vector3i(eps, 0, 0))) \
-		   - get_density_local_or_world(Vector3i(pi - Vector3i(eps, 0, 0)))
-	var dy = get_density_local_or_world(Vector3i(pi + Vector3i(0, eps, 0))) \
-		   - get_density_local_or_world(Vector3i(pi - Vector3i(0, eps, 0)))
-	var dz = get_density_local_or_world(Vector3i(pi + Vector3i(0, 0, eps))) \
-		   - get_density_local_or_world(Vector3i(pi - Vector3i(0, 0, eps)))
+	var dx = get_density(Vector3i(pi + Vector3i(eps, 0, 0))) \
+		   - get_density(Vector3i(pi - Vector3i(eps, 0, 0)))
+	var dy = get_density(Vector3i(pi + Vector3i(0, eps, 0))) \
+		   - get_density(Vector3i(pi - Vector3i(0, eps, 0)))
+	var dz = get_density(Vector3i(pi + Vector3i(0, 0, eps))) \
+		   - get_density(Vector3i(pi - Vector3i(0, 0, eps)))
 
 	return Vector3(dx, dy, dz).normalized()
