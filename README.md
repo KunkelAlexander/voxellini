@@ -3,8 +3,8 @@
 This repository documents the development of a **voxel terrain editor** built in **Godot 4**, using **Marching Cubes** for smooth surface extraction.
 
 <p align="center">
-  <a href="figures/development_snapshots/Screenshot from 2025-12-18 18-55-07.png">
-	<img src="figures/development_snapshots/Screenshot from 2025-12-18 18-55-07.png" width="800">
+  <a href="figures/development_snapshots/Screenshot from 2025-12-20 16-42-59.png">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-20 16-42-59.png" width="800">
   </a>
 </p>
 
@@ -123,12 +123,31 @@ Also support savings of chunked data.
 
 ### 8. A colourwheel
 
-User can pick from a nice colour palette to colour voxels. Every colour gets assigned an id.
-Currently, the id's are written to the output chunk file - but not the palette's. Fix it!
+User can pick from a nice colour palette to colour voxels. Every colour is assigned an id.
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-19 22-35-51.png">
 	<img src="figures/development_snapshots/Screenshot from 2025-12-19 22-35-51.png" width="800">
+  </a>
+</p>
+
+### 9. Fix chunk boundary bug
+
+Update all boundary chunks when adding voxels at chunk boundaries. This avoids open meshes such as in the following screen shot. The basic features work more or less.
+
+
+<p align="center">
+  <a href="figures/development_snapshots/Screenshot from 2025-12-20 15-14-59.png">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-20 15-14-59.png" width="800">
+  </a>
+</p>
+
+### 10. Performance optimisation
+The global density/material lookup is currently very slow - building a buffer is the way to go. In addition, moving from dictionaries to arrays would probably help with performance. But I wonder whether just writing a compute shader might not force me to rethink some design decisions right away and would solve some of the performance issues.
+
+<p align="center">
+  <a href="figures/development_snapshots/Screenshot from 2025-12-20 16-33-55.png">
+	<img src="figures/development_snapshots/Screenshot from 2025-12-20 16-33-55.png" width="800">
   </a>
 </p>
 
