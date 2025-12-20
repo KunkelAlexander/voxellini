@@ -20,7 +20,6 @@ func execute(terrain):
 func undo(terrain):
 	for p in before.keys():
 		var s = before[p]
-		terrain.set_density(p, s.density)
-		terrain.set_material(p, s.material)
+		terrain.set_density(p, s.density, "undo")
+		terrain.set_material(p, s.material, "undo")
 		
-		print("Set material in undo")

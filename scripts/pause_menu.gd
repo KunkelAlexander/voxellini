@@ -27,6 +27,11 @@ func _on_load_pressed():
 	pending_action = FileAction.LOAD
 	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dialog.popup_centered()
+
+
+func _on_reset_pressed():
+	Game.reset_world()
+	Game.set_mode(Game.Mode.GAMEPLAY)
 	
 func _on_quit_pressed():
 	get_tree().quit()

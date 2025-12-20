@@ -9,6 +9,7 @@ var mode := Mode.GAMEPLAY
 
 signal mode_changed(new_mode)
 signal world_loaded(world)
+signal world_reset(world)
 
 var pause_menu: CanvasLayer
 func _ready():
@@ -61,3 +62,13 @@ func load_world(filename):
 
 		# Let other components know 
 		emit_signal("world_loaded", world)
+
+func reset_world():
+	var world = get_world()
+	if world:
+		
+		world.reset()
+		# Let other components know 
+		emit_signal("world_reset", world)
+	
+	

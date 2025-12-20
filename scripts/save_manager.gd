@@ -31,19 +31,39 @@ func serialize_world(world: Node) -> Dictionary:
 				"material": material
 			}
 
+
+	# ---- PALETTE SERIALIZATION ----
+	var palette_data := {}
+	for id in MaterialPalette.colors.keys():
+		palette_data[str(id)] = color_to_data(MaterialPalette.colors[id])
+
 	return {
-		"version": 1,
+		"version": 2, # bump version
+		"palette": palette_data,
 		"chunks": chunks_data
 	}
+
 
 func deserialize_world(world: Node, data: Dictionary):
 	assert(data.has("chunks"), "Invalid world save data")
 
-	# Optional: clear existing chunks
-	for c in world.chunks.keys():
-		world.chunks[c].queue_free()
-	world.chunks.clear()
+	# Clear existing chunks
+	world.reset()
 
+	# ---- PALETTE DESERIALIZATION ----
+	if data.has("palette"):
+		MaterialPalette.colors.clear()
+
+		var max_id := -1
+		for key in data["palette"].keys():
+			var id := int(key)
+			var col := data_to_color(data["palette"][key])
+			MaterialPalette.colors[id] = col
+			max_id = max(max_id, id)
+
+		MaterialPalette._next_id = max_id + 1
+		MaterialPalette.palette_changed.emit(-1)
+	
 	for chunk_key in data["chunks"].keys():
 		var chunk_coord := key_to_v3i(chunk_key)
 		var chunk_data = data["chunks"][chunk_key]
@@ -85,3 +105,9 @@ func load_world_from_file(world: Node, path: String):
 		return
 
 	deserialize_world(world, parsed)
+	
+func color_to_data(c: Color) -> Array:
+	return [c.r, c.g, c.b, c.a]
+
+func data_to_color(a: Array) -> Color:
+	return Color(a[0], a[1], a[2], a[3])

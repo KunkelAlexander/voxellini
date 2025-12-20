@@ -21,7 +21,7 @@ var current_material_id := 0
 
 var brush_radius := 2.0
 const MIN_BRUSH_RADIUS := 0.1
-const MAX_BRUSH_RADIUS := 4.0
+const MAX_BRUSH_RADIUS := 10.0
 const BRUSH_RADIUS_STEP := 0.1
 const BRUSH_STRENGTH := 10
 var last_hit_position: Vector3
@@ -69,9 +69,6 @@ func _process(_dt):
 	# Store surface info
 	# Sticky hit positions
 	last_hit_position =  Vector3(
-		#floor(hit.position.x),  # sticky position
-		#floor(hit.position.y),  # sticky position
-		#floor(hit.position.z)  # sticky position
 		hit.position.x,
 		hit.position.y,
 		hit.position.z

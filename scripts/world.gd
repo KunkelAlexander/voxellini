@@ -1,8 +1,8 @@
 extends Node3D
 
+const DEBUG := false 
 const DEFAULT_MATERIAL := 0
 var chunks := {}  # Dictionary<Vector3i, VoxelChunk>
-const DEBUG := false 
 var dirty_chunks: Array[VoxelChunk] = []
 
 func _ready():
@@ -176,3 +176,9 @@ func _process(_delta):
 		if chunk.dirty:
 			chunk.generate_mesh()
 			chunk.dirty = false
+
+func reset():
+	for c in chunks.keys():
+		chunks[c].queue_free()
+	chunks.clear()
+	dirty_chunks.clear()
