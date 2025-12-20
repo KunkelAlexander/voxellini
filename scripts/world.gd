@@ -3,6 +3,7 @@ extends Node3D
 const DEFAULT_MATERIAL := 0
 var chunks := {}  # Dictionary<Vector3i, VoxelChunk>
 const DEBUG := false 
+var dirty_chunks: Array[VoxelChunk] = []
 
 func _ready():
 	add_to_group("world")
@@ -29,13 +30,20 @@ func get_or_create_chunk(chunk_coord: Vector3i) -> VoxelChunk:
 	if DEBUG:
 		print("Create new chunk c = ", chunk_coord)
 	var chunk := VoxelChunk.new()
-	chunk.world       = self
 	chunk.chunk_coord = chunk_coord
 	chunk.position    = Vector3(chunk_coord) * VoxelChunk.SIZE
+	chunk.dirty_requested.connect(_on_chunk_dirty_requested)
 	add_child(chunk)
+	
+	
 
 	chunks[chunk_coord] = chunk
 	return chunk
+
+func _on_chunk_dirty_requested(chunk: VoxelChunk):
+	if not dirty_chunks.has(chunk):
+		dirty_chunks.append(chunk)
+
 
 func mark_chunk_dirty(chunk_coord: Vector3i):
 	if chunks.has(chunk_coord):
@@ -156,3 +164,15 @@ func add_density_world(world_pos: Vector3, strength: float, radius: float, mater
 				# Update density and material fields
 				set_density(p, new_density)
 				set_material(p, new_material)
+
+const MAX_MESHES_PER_FRAME := 1
+
+func _process(_delta):
+	for i in range(min(MAX_MESHES_PER_FRAME, dirty_chunks.size())):
+		var chunk = dirty_chunks.pop_front()
+		if not is_instance_valid(chunk):
+			continue
+
+		if chunk.dirty:
+			chunk.generate_mesh()
+			chunk.dirty = false

@@ -22,3 +22,5 @@ func undo(terrain):
 		var s = before[p]
 		terrain.set_density(p, s.density)
 		terrain.set_material(p, s.material)
+		
+		print("Set material in undo")

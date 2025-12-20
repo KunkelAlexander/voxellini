@@ -154,12 +154,12 @@
 extends Node3D
 class_name VoxelChunk
 
+signal dirty_requested(chunk: VoxelChunk)
+
 var mesh_instance: MeshInstance3D
 var static_body: StaticBody3D
 var collision_shape: CollisionShape3D
-
 var chunk_coord: Vector3i        # chunk-space coordinate
-var world: Node
 
 const SIZE := 16
 
@@ -183,9 +183,13 @@ var density_field      := {} # Dictionary<Vector3i, float>
 var material_id_field  := {} # Dictionary<Vector3i, int>
 
 var dirty := false
-func mark_dirty():
-	dirty = true
 
+func mark_dirty():
+	if dirty:
+		return
+	dirty = true
+	emit_signal("dirty_requested", self)
+	
 func get_density_field() -> Dictionary:
 	return density_field
 
@@ -638,14 +642,8 @@ func _ready():
 	static_body.add_child(collision_shape)
 	
 	init_density()
-	#mark_dirty()
-
-
-func _process(_delta):
-	if dirty:
-		generate_mesh()
-		dirty = false
-
+	mark_dirty()
+	
 func _on_palette_changed():
 	mark_dirty()
 
