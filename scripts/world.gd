@@ -165,17 +165,23 @@ func add_density_world(world_pos: Vector3, strength: float, radius: float, mater
 				set_density(p, new_density)
 				set_material(p, new_material)
 
-const MAX_MESHES_PER_FRAME := 1
+const MAX_MESHES_PER_FRAME := 2
 
 func _process(_delta):
+	if DEBUG:
+		if dirty_chunks.size(): 
+			print("There are ", dirty_chunks.size(), " dirty chunks before processing.")
+			
 	for i in range(min(MAX_MESHES_PER_FRAME, dirty_chunks.size())):
 		var chunk = dirty_chunks.pop_front()
 		if not is_instance_valid(chunk):
 			continue
 
 		if chunk.dirty:
+			chunk.dirty = false  # <-- clear first
 			chunk.generate_mesh()
-			chunk.dirty = false
+
+
 
 func reset():
 	for c in chunks.keys():

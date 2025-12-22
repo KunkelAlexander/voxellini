@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1766162445|99458963';
+const CACHE_VERSION = '1766267565|16759261276';
 /** @type {string} */
 const CACHE_PREFIX = '3d_painter-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;

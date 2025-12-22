@@ -670,8 +670,6 @@ func generate_mesh():
 		for i in range(vertices.size()):
 			print("v[", i, "] = ", vertices[i])
 
-	if vertices.size() == 0: 
-		return
 		
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)

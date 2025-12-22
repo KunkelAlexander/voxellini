@@ -133,7 +133,7 @@ User can pick from a nice colour palette to colour voxels. Every colour is assig
 
 ### 9. Fix chunk boundary bug
 
-Update all boundary chunks when adding voxels at chunk boundaries. This avoids open meshes such as in the following screen shot. The basic features work more or less.
+Update all boundary chunks when adding voxels at chunk boundaries. This avoids open meshes such as in the following screenshot. The basic features work more or less.
 
 
 <p align="center">
