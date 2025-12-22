@@ -10,10 +10,12 @@ config_version=5
 
 [application]
 
-config/name="3d_painter"
+config/name="Voxellini"
+config/description="3D open-source voxel painter."
 run/main_scene="uid://dt1wmc4rob5kn"
 config/features=PackedStringArray("4.4", "GL Compatibility")
-config/icon="res://icon.svg"
+boot_splash/image="uid://ci3dpe68u7d51"
+config/icon="uid://bdskqqv1gct34"
 
 [autoload]
 
