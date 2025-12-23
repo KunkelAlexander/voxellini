@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://dt1wmc4rob5kn"]
+[gd_scene load_steps=17 format=3 uid="uid://dt1wmc4rob5kn"]
 
 [ext_resource type="Script" uid="uid://dwtmro20xp3vn" path="res://scripts/player.gd" id="1_k0juu"]
 [ext_resource type="Script" uid="uid://cy4iyllw61jrh" path="res://scripts/voxel_chunk.gd" id="2_71j4m"]
@@ -7,6 +7,8 @@
 [ext_resource type="Script" uid="uid://bm14rwqxjkt1r" path="res://scripts/world.gd" id="5_qfnet"]
 [ext_resource type="Script" uid="uid://brm5o0epfmyjy" path="res://scripts/ui.gd" id="6_qfnet"]
 [ext_resource type="Script" uid="uid://ctku6nm8mvx4j" path="res://scripts/pause_menu.gd" id="7_4mrxx"]
+[ext_resource type="FontFile" uid="uid://c1wyktohhfdy7" path="res://assets/fonts/Dynalight-Regular.otf" id="7_7r4gi"]
+[ext_resource type="Script" uid="uid://c6uxxnrxnf8ux" path="res://scripts/buttons.gd" id="7_w7kh3"]
 [ext_resource type="Script" uid="uid://b5wd1ftiy787y" path="res://scripts/help_panel.gd" id="8_4mrxx"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_71j4m"]
@@ -99,6 +101,14 @@ offset_right = 48.5
 offset_bottom = 68.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("7_w7kh3")
+
+[node name="Label" type="Label" parent="Menu/Panel/Buttons"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("7_7r4gi")
+theme_override_font_sizes/font_size = 72
+text = "Voxellini"
+horizontal_alignment = 1
 
 [node name="Resume" type="Button" parent="Menu/Panel/Buttons"]
 custom_minimum_size = Vector2(320, 56)

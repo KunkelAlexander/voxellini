@@ -8,7 +8,10 @@ var pending_action: FileAction
 func _ready():
 	Game.mode_changed.connect(_on_mode_changed)
 	visible = true
-
+	
+	if OS.has_feature("web"):
+		$QuitButton.visible = false
+		
 func _on_mode_changed(mode):
 	visible = (mode == Game.Mode.MENU)
 

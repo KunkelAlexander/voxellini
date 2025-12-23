@@ -133,7 +133,7 @@ func _unhandled_input(event):
 	
 	if Game.mode != Game.Mode.GAMEPLAY:
 		return
-		
+			
 	# Start sculpt stroke
 	if event.is_action_pressed("add_density") or event.is_action_pressed("remove_density"):
 		if active_command == null:
