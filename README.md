@@ -1,6 +1,6 @@
 # Voxellini
 
-This repository documents the development of *Voxellini*, a **voxel terrain editor** built in **Godot 4**, using **Marching Cubes** for smooth surface extraction.
+This repository documents the development of *Voxellini*, a **voxel terrain editor** built in **Godot 4**, using **Marching Cubes** for smooth surface extraction. Use it in your browser here: https://kunkelalexander.github.io/voxellini/. 
 
 <p align="center">
   <a href="figures/development_snapshots/Screenshot from 2025-12-20 16-42-59.png">
