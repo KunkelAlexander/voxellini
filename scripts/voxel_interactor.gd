@@ -176,7 +176,7 @@ func _unhandled_input(event):
 			MIN_BRUSH_RADIUS,
 			MAX_BRUSH_RADIUS
 		)
-		print("Up to ", brush_strength)
+		
 		update_brush_visual()
 		if DEBUG:
 			print("[Interactor] Brush strength:", brush_strength)
