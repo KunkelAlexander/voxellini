@@ -17,7 +17,7 @@ var static_body: StaticBody3D
 var collision_shape: CollisionShape3D
 var chunk_coord: Vector3i        # chunk-space coordinate
 
-const SIZE := 16
+const SIZE := 8
 
 const SIZE_X           := SIZE
 const SIZE_Y           := SIZE

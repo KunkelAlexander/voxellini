@@ -7,7 +7,7 @@ var dirty_chunks: Array[VoxelChunk] = []
 
 var meshers: Array[VoxelMesher] = [
 	MarchingCubesMesher.new(),
-	BlockMesher.new(),
+	BlockMesher.new()
 ]
 
 var current_mesher_index := 0
